@@ -1,20 +1,10 @@
 # Setup Yocto
 
-```sh
-set -x TERM xterm
-```
-
 Create a new directory for the build environment
 
 ```sh
-mkdir yocto
-```
-
-Download the `kas-container` startup script
-
-```sh
-curl -o kas-container -sL https://raw.githubusercontent.com/siemens/kas/master/kas-container
-chmod u+x kas-container
+mkdir yocto-vrohow
+cd yocto-vrohow
 ```
 
 Create new layer to customize the distribution
@@ -38,7 +28,7 @@ header:
 repos:
   meta-nao:
     url: "https://github.com/hulks/meta-nao.git"
-    refspec: e7150b4dc44bc289f4cf070acf0a04fd47d24a94 # can be any git ref
+    refspec: e7150b4dc44bc289f4cf070acf0a04fd47d24a94
 ```
 
 The `refspec` arguments can be any git refs.
@@ -50,6 +40,13 @@ Leave the new layer to enter the build environment top level
 ```sh
 cd ..
 # now again at [...]/yocto/
+```
+
+Download the `kas-container` startup script
+
+```sh
+curl -o kas-container -sL https://raw.githubusercontent.com/siemens/kas/master/kas-container
+chmod u+x kas-container
 ```
 
 The directory structure now looks like this:
@@ -73,8 +70,7 @@ Cloning these repositories can take some time as some of the git mirrors are tre
 To skip the configuration copy repositories from preparation:
 
 ```sh
-cp -r ../yocto-vrohow-prep/meta-{clang/,congatec-x86/,intel/,openembedded/,nao/} .
-cp -r ../yocto-vrohow-prep/poky .
+cp -r ../yocto-vrohow-prep/meta-{clang/,congatec-x86/,intel/,openembedded/} ../yocto-vrohow-prep/poky .
 ```
 
 The directoy structure of the build environment now contains all necessary layer repositories and a `build` directory which will contain the build artifacts.
@@ -176,7 +172,7 @@ At the end of the flashing procedure, the Nao reboots into the new image.
 Find the IP address of the Nao. The default configuration is using DHCP.
 
 ```sh
-sudo nmap -p 22 10.1.24.0/24
+nmap -p 22 10.1.24.0/24 | rg "nao"
 ssh nao@10.1.24.197
 cat /etc/os-release
 ```
@@ -250,14 +246,12 @@ And add an overlay to the `nao-image`:
 ```bb
 # recipes-core/images/nao-image.bbappend
 
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
-
 CORE_IMAGE_EXTRA_INSTALL += "\
                              curl \
                             "
 ```
 
-Now, rebuild, reflash the image to apply the modifications to the nao.
+Now, reconfigure, rebuild and reflash the image to apply the modifications to the nao.
 
 ```sh
 ./kas-container shell meta-vrohow/kas-project.yml
@@ -276,6 +270,6 @@ bitbake -c populate_sdk nao-image
 Download the image from the build host and install it on the machine
 
 ```sh
-rsync -LP rechenknecht:worktree/yocto-vrohow/build/tmp/deploy/sdk/nao-core-minimal-toolchain-1.0.sh Downloads/
-~/Downloads/nao-core-minimal-toolchain-1.0.sh -d ./1.0
+rsync -LP rechenknecht:worktree/yocto-vrohow/build/tmp/deploy/sdk/nao-core-minimal-toolchain-1.0.sh .
+./nao-core-minimal-toolchain-1.0.sh -d ./1.0
 ```
