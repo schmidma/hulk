@@ -1,12 +1,11 @@
 use std::{
-    ffi::OsString,
     net::Ipv4Addr,
     sync::{Arc, Mutex},
     thread::{sleep, spawn, JoinHandle},
     time::Duration,
 };
 
-use anyhow::{anyhow, Context, Result};
+use color_eyre::eyre::{eyre, Result, WrapErr};
 use log::{debug, info};
 
 use crate::{
@@ -37,8 +36,8 @@ impl Aliveness {
     fn aliveness_thread(
         termination_request: TerminationRequest,
         service_manager: &ServiceManager,
-        hulks_os_version: String,
-        hostname: OsString,
+        hulks_os_version: &str,
+        hostname: &str,
         robot_configuration: Arc<Mutex<Option<RobotConfiguration>>>,
         battery: Arc<Mutex<Option<Battery>>>,
     ) -> Result<()> {
@@ -72,9 +71,11 @@ impl Aliveness {
         battery: Arc<Mutex<Option<Battery>>>,
     ) -> Result<Self> {
         let hulks_os_version = get_hulks_os_version()?;
-        let hostname = hostname::get().context("Failed to query hostname")?;
+        let hostname = hostname::get()
+            .wrap_err("failed to query hostname")?
+            .to_str()
+            .ok_or(eyre!("failed to decode hostname"))?;
         let service_manager = ServiceManager::new()?;
-
         let thread = spawn(move || {
             while robot_configuration.lock().unwrap().is_none() || battery.lock().unwrap().is_none()
             {
@@ -84,7 +85,7 @@ impl Aliveness {
             let result = Aliveness::aliveness_thread(
                 termination_request.clone(),
                 &service_manager,
-                hulks_os_version,
+                &hulks_os_version,
                 hostname,
                 robot_configuration,
                 battery,

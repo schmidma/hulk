@@ -15,8 +15,8 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
-use anyhow::{anyhow, Context, Error, Result};
 use byteorder::{ByteOrder, NativeEndian};
+use color_eyre::eyre::{eyre, Result, WrapErr};
 use epoll::{ControlOptions, Event, Events};
 use log::{debug, error, info, warn};
 use nix::sys::eventfd::{eventfd, EfdFlags};
@@ -82,7 +82,7 @@ impl Proxy {
         battery: Arc<Mutex<Option<Battery>>>,
     ) -> Result<Self> {
         let shutdown_file_descriptor =
-            eventfd(0, EfdFlags::empty()).context("Failed to open eventfd")?;
+            eventfd(0, EfdFlags::empty()).wrap_err("failed to open eventfd")?;
         let shutdown_file = unsafe { File::from_raw_fd(shutdown_file_descriptor) };
 
         let lola = {
@@ -155,7 +155,7 @@ impl Proxy {
 
         let written_bytes = write_result.context("Failed to write to shutdown file")?;
         assert_eq!(written_bytes, 8);
-        join_result.map_err(|error| anyhow!("Failed to join proxy thread: {:?}", error))?;
+        join_result.map_err(|error| eyre!("Failed to join proxy thread: {:?}", error))?;
         close_result.context("Failed to close epoll file descriptor")?;
 
         Ok(())
@@ -379,7 +379,10 @@ impl Proxy {
         Ok(())
     }
 
-    fn add_to_epoll(poll_file_descriptor: RawFd, file_descriptor_to_add: RawFd) -> Result<()> {
+    fn add_to_epoll(
+        poll_file_descriptor: RawFd,
+        file_descriptor_to_add: RawFd,
+    ) -> Result<(), systemd::Error> {
         epoll::ctl(
             poll_file_descriptor,
             ControlOptions::EPOLL_CTL_ADD,
@@ -389,6 +392,5 @@ impl Proxy {
                 file_descriptor_to_add as u64,
             ),
         )
-        .map_err(Error::from)
     }
 }
