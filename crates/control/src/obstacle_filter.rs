@@ -72,7 +72,7 @@ impl ObstacleFilter {
             .persistent
             .iter()
             .zip(context.detected_robots_bottom.persistent.values());
-        for ((detection_time, robots_top), robots_bottom) in measured_robots {
+        for ((detection_time, _robots_top), _robots_bottom) in measured_robots {
             let current_odometry_to_last_odometry = context
                 .current_odometry_to_last_odometry
                 .get(detection_time)
@@ -102,34 +102,6 @@ impl ObstacleFilter {
                             .network_robot_measurement_noise,
                     ),
                 );
-            }
-
-            if context
-                .obstacle_filter_configuration
-                .use_robot_detection_measurements
-            {
-                let measured_robots_in_control_cycle = robots_top
-                    .iter()
-                    .chain(robots_bottom.iter())
-                    .filter_map(|data| data.as_ref());
-
-                for obstacles in measured_robots_in_control_cycle {
-                    for obstacle in obstacles.robot_positions.iter() {
-                        self.update_hypotheses_with_measurement(
-                            obstacle.center,
-                            ObstacleKind::Robot,
-                            *detection_time,
-                            context
-                                .obstacle_filter_configuration
-                                .robot_detection_measurement_matching_distance,
-                            Matrix2::from_diagonal(
-                                &context
-                                    .obstacle_filter_configuration
-                                    .robot_measurement_noise,
-                            ),
-                        );
-                    }
-                }
             }
 
             for sonar_obstacle in context.sonar_obstacles.get(detection_time) {

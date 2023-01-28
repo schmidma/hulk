@@ -63,6 +63,7 @@ egui_dock = { version = "0.2.1", git = "https://github.com/knoellle/egui_dock/",
   "serde",
 ] }
 egui_extras = { version = "0.19.0", features = ["image"] }
+fast_image_resize = "2.4.0"
 fern = { version = "0.6.1", features = ["colored"] }
 filtering = { path = "crates/filtering" }
 framework = { path = "crates/framework" }
@@ -125,3 +126,4 @@ vision = { path = "crates/vision" }
 [profile.incremental]
 inherits = "release"
 incremental = true
+debug = true

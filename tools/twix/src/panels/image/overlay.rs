@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 
 use crate::{nao::Nao, twix_painter::TwixPainter};
 
-use super::overlays::{BallDetection, LineDetection};
+use super::overlays::{BallDetection, LineDetection, RobotDetection};
 
 pub trait Overlay {
     const NAME: &'static str;
@@ -79,33 +79,39 @@ where
 pub struct Overlays {
     pub line_detection: EnabledOverlay<LineDetection>,
     pub ball_detection: EnabledOverlay<BallDetection>,
+    pub robot_detection: EnabledOverlay<RobotDetection>,
 }
 
 impl Overlays {
     pub fn new(nao: Arc<Nao>, storage: Option<&Value>, selected_cycler: Cycler) -> Self {
         let line_detection = EnabledOverlay::new(nao.clone(), storage, true, selected_cycler);
-        let ball_detection = EnabledOverlay::new(nao, storage, true, selected_cycler);
+        let ball_detection = EnabledOverlay::new(nao.clone(), storage, true, selected_cycler);
+        let robot_detection = EnabledOverlay::new(nao, storage, true, selected_cycler);
         Self {
             line_detection,
             ball_detection,
+            robot_detection,
         }
     }
 
     pub fn update_cycler(&mut self, selected_cycler: Cycler) {
         self.line_detection.update_cycler(selected_cycler);
         self.ball_detection.update_cycler(selected_cycler);
+        self.robot_detection.update_cycler(selected_cycler);
     }
 
     pub fn combo_box(&mut self, ui: &mut Ui, selected_cycler: Cycler) {
         ui.menu_button("Overlays", |ui| {
             self.line_detection.checkbox(ui, selected_cycler);
             self.ball_detection.checkbox(ui, selected_cycler);
+            self.robot_detection.checkbox(ui, selected_cycler);
         });
     }
 
     pub fn paint(&self, painter: &TwixPainter) -> Result<()> {
         let _ = self.line_detection.paint(painter);
         let _ = self.ball_detection.paint(painter);
+        let _ = self.robot_detection.paint(painter);
         Ok(())
     }
 
@@ -113,6 +119,7 @@ impl Overlays {
         json!({
             "line_detection": self.line_detection.save(),
             "ball_detection": self.ball_detection.save(),
+            "robot_detection": self.robot_detection.save(),
         })
     }
 }

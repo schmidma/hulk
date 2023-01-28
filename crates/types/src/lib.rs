@@ -72,7 +72,7 @@ pub use camera_matrix::{CameraMatrices, CameraMatrix, Horizon, ProjectedFieldLin
 pub use camera_position::CameraPosition;
 pub use color::{Intensity, Rgb, RgbChannel, YCbCr422, YCbCr444};
 pub use cycle_time::CycleTime;
-pub use detected_robots::{ClusterCone, DetectedRobots, ScoredCluster, ScoredClusterPoint};
+pub use detected_robots::{Box, DetectedRobots, ScaledBoxes};
 pub use fall_state::FallState;
 pub use field_border::FieldBorder;
 pub use field_color::FieldColor;

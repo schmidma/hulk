@@ -29,7 +29,7 @@ const SERIALIZATION_JPEG_QUALITY: u8 = 40;
 pub struct Image {
     width_422: u32,
     height: u32,
-    buffer: Arc<Vec<YCbCr422>>,
+    pub buffer: Arc<Vec<YCbCr422>>,
 }
 
 impl Debug for Image {
