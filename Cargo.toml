@@ -24,6 +24,7 @@ members = [
   "crates/structs",
   "crates/types",
   "crates/vision",
+  "tools/baldrian",
   "tools/camera_matrix_extractor",
   "tools/depp",
   "tools/fanta",
@@ -76,6 +77,7 @@ fuzzy-matcher = "0.3.7"
 glob = "0.3.0"
 hardware = { path = "crates/hardware" }
 home = "0.5.4"
+hyper = { version = "0.14.24", features = ["full"] }
 i2cdev = "0.5.1"
 image = "0.24.4"
 itertools = "0.10.5"
