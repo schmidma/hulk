@@ -8,7 +8,7 @@ use types::{
     PathObstacleShape, PathSegment,
 };
 
-use crate::a_star::{a_star_search, DynamicMap};
+use super::a_star::{a_star_search, DynamicMap};
 
 #[derive(Debug, Clone)]
 pub struct PathNode {

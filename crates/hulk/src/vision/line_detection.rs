@@ -9,7 +9,7 @@ use types::{
     image::Image, CameraMatrix, EdgeType, FilteredSegments, ImageLines, Line, LineData, Segment,
 };
 
-use crate::ransac::{Ransac, RansacResult};
+use super::ransac::{Ransac, RansacResult};
 
 pub struct LineDetection {}
 

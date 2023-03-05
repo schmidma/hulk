@@ -78,7 +78,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: #accessor
@@ -94,7 +94,7 @@ impl Node<'_> {
                         ReferenceType::Mutable,
                         quote! { instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: #accessor
@@ -156,7 +156,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Some(quote! {
                         #accessor .is_some()
@@ -187,14 +187,14 @@ impl Node<'_> {
                         ReferenceType::Mutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     let path_string = path_to_path_string_token_stream(
                         path,
                         "additional_outputs",
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: framework::AdditionalOutput::new(
@@ -218,7 +218,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     let historic_accessor = path_to_accessor_token_stream(
                         quote! { database },
@@ -226,7 +226,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: [(now, #now_accessor)]
@@ -267,7 +267,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: #accessor
@@ -283,7 +283,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: #accessor
@@ -303,7 +303,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: framework::PerceptionInput {
@@ -343,7 +343,7 @@ impl Node<'_> {
                         ReferenceType::Mutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: #accessor
@@ -371,7 +371,7 @@ impl Node<'_> {
                         ReferenceType::Immutable,
                         quote! { self.instance },
                         quote! { #cycler_module_name_identifier::CyclerInstance:: },
-                        &self.cycler_instances.modules_to_instances[&self.node.cycler_module],
+                        &self.cycler_instances.module_to_instance[&self.node.cycler_module],
                     );
                     Ok(quote! {
                         #name: #accessor .unwrap()

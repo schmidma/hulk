@@ -11,7 +11,7 @@ use types::{
     ProjectedLimbs, Rgb, RgbChannel, ScanGrid, ScanLine, Segment, YCbCr444,
 };
 
-use crate::CyclerInstance;
+use super::CyclerInstance;
 
 pub struct ImageSegmenter {}
 

@@ -4,11 +4,12 @@ use color_eyre::{
     eyre::{Result, WrapErr},
     install,
 };
-use cyclers::run;
 use hulk::{nao, setup_logger};
 use serde_json::from_reader;
 use tokio_util::sync::CancellationToken;
 use types::hardware::Interface;
+
+use crate::cyclers::run;
 
 fn main() -> Result<()> {
     setup_logger(true)?;

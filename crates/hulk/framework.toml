@@ -1,0 +1,33 @@
+[[cyclers]]
+name = "Vision"
+kind = "Perception"
+instances = ["Top", "Bottom"]
+module = "vision"
+nodes = [
+  "image_receiver",
+  "field_color_detection",
+]
+
+[[cyclers]]
+name = "Control"
+kind = "RealTime"
+module = "control"
+nodes = [
+  "sensor_data_receiver",
+]
+
+[[cyclers]]
+name = "SplNetwork"
+kind = "Perception"
+module = "spl_network"
+nodes = [
+  "message_receiver",
+]
+
+[[cyclers]]
+name = "Audio"
+kind = "Perception"
+module = "audio"
+nodes = [
+  "microphone_recorder",
+]

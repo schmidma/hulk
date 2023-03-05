@@ -3,18 +3,19 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use crate::Item;
-
-include!(concat!(env!("OUT_DIR"), "/perception_databases_structs.rs"));
+use crate::future_queue::Updates;
 
 #[derive(Default)]
-pub struct PerceptionDatabases {
+pub struct PerceptionDatabases<Databases> {
     databases: BTreeMap<SystemTime, Databases>,
     first_timestamp_of_temporary_databases: Option<SystemTime>,
 }
 
-impl PerceptionDatabases {
-    pub fn update(&mut self, now: SystemTime, updates: Updates) {
+impl<Databases> PerceptionDatabases<Databases>
+where
+    Databases: Default,
+{
+    pub fn update(&mut self, now: SystemTime, updates: impl Updates<Databases>) {
         if let Some(first_timestamp_of_temporary_databases) =
             self.first_timestamp_of_temporary_databases
         {

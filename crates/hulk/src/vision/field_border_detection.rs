@@ -4,7 +4,7 @@ use framework::{AdditionalOutput, MainOutput};
 use nalgebra::{point, Point2, Vector2};
 use types::{CameraMatrix, FieldBorder, Horizon, ImageSegments, Intensity, Line, Line2, Segment};
 
-use crate::{ransac::Ransac, CyclerInstance};
+use super::{ransac::Ransac, CyclerInstance};
 
 pub struct FieldBorderDetection {}
 

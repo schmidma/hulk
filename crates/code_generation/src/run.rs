@@ -10,7 +10,7 @@ pub fn generate_run(cyclers: &[Cycler]) -> TokenStream {
     let cycler_initializations: Vec<_> = cyclers
         .iter()
         .flat_map(|cycler| {
-            cycler.get_cycler_instances().modules_to_instances[cycler.get_cycler_module_name()]
+            cycler.get_cycler_instances().module_to_instance[cycler.get_cycler_module_name()]
                 .iter()
                 .map(|cycler_instance| {
                     let cycler_instance_snake_case = cycler_instance.to_case(Case::Snake);
@@ -91,7 +91,7 @@ pub fn generate_run(cyclers: &[Cycler]) -> TokenStream {
     let multiple_buffer_initializers: Vec<_> = cyclers
         .iter()
         .flat_map(|cycler| {
-            cycler.get_cycler_instances().modules_to_instances[cycler.get_cycler_module_name()]
+            cycler.get_cycler_instances().module_to_instance[cycler.get_cycler_module_name()]
                 .iter()
                 .map(|cycler_instance| {
                     let cycler_instance_snake_case = cycler_instance.to_case(Case::Snake);
@@ -114,7 +114,7 @@ pub fn generate_run(cyclers: &[Cycler]) -> TokenStream {
         .iter()
         .filter_map(|cycler| {
             if let Cycler::Perception {..} = cycler {
-                Some(cycler.get_cycler_instances().modules_to_instances[cycler.get_cycler_module_name()]
+                Some(cycler.get_cycler_instances().module_to_instance[cycler.get_cycler_module_name()]
                     .iter()
                     .map(|cycler_instance| {
                         let cycler_instance_snake_case = cycler_instance.to_case(Case::Snake);
@@ -135,7 +135,7 @@ pub fn generate_run(cyclers: &[Cycler]) -> TokenStream {
     let cycler_starts: Vec<_> = cyclers
         .iter()
         .flat_map(|cycler| {
-            cycler.get_cycler_instances().modules_to_instances[cycler.get_cycler_module_name()]
+            cycler.get_cycler_instances().module_to_instance[cycler.get_cycler_module_name()]
                 .iter()
                 .map(|cycler_instance| {
                     let cycler_instance_snake_case = cycler_instance.to_case(Case::Snake);
@@ -156,7 +156,7 @@ pub fn generate_run(cyclers: &[Cycler]) -> TokenStream {
     let cycler_joins: Vec<_> = cyclers
         .iter()
         .flat_map(|cycler| {
-            cycler.get_cycler_instances().modules_to_instances[cycler.get_cycler_module_name()]
+            cycler.get_cycler_instances().module_to_instance[cycler.get_cycler_module_name()]
                 .iter()
                 .map(|cycler_instance| {
                     let cycler_instance_snake_case = cycler_instance.to_case(Case::Snake);

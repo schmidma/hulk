@@ -15,7 +15,7 @@ pub fn get_cyclers<'a>(
     cycler_types: &'a CyclerTypes,
 ) -> Vec<Cycler<'a>> {
     cycler_instances
-        .modules_to_instances
+        .module_to_instance
         .keys()
         .map(|cycler_module_name| {
             match cycler_types.cycler_modules_to_cycler_types[cycler_module_name] {
@@ -155,7 +155,7 @@ impl Cycler<'_> {
                 .filter_map(
                     |(other_cycler_module_name, other_cycler_type)| match other_cycler_type {
                         CyclerType::RealTime => Some(
-                            cycler_instances.modules_to_instances[other_cycler_module_name]
+                            cycler_instances.module_to_instance[other_cycler_module_name]
                                 .iter()
                                 .map(|other_cycler_instance_name| OtherCycler::Reader {
                                     cycler_instance_name: other_cycler_instance_name,
@@ -176,7 +176,7 @@ impl Cycler<'_> {
                 .filter_map(
                     |(other_cycler_module_name, other_cycler_type)| match other_cycler_type {
                         CyclerType::Perception => Some(
-                            cycler_instances.modules_to_instances[other_cycler_module_name]
+                            cycler_instances.module_to_instance[other_cycler_module_name]
                                 .iter()
                                 .map(|other_cycler_instance_name| OtherCycler::Consumer {
                                     cycler_instance_name: other_cycler_instance_name,

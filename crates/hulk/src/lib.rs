@@ -2,8 +2,14 @@ use std::io::stdout;
 
 use color_eyre::eyre::Result;
 
+mod audio;
+mod control;
+mod cyclers;
 #[cfg(feature = "nao")]
 pub mod nao;
+mod spl_network;
+mod structs;
+mod vision;
 #[cfg(feature = "webots")]
 pub mod webots;
 

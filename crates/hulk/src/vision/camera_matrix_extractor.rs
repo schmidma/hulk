@@ -3,7 +3,7 @@ use context_attribute::context;
 use framework::MainOutput;
 use types::{image::Image, CameraMatrices, CameraMatrix};
 
-use crate::CyclerInstance;
+use super::CyclerInstance;
 
 pub struct CameraMatrixExtractor {}
 

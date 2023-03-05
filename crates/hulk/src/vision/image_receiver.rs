@@ -3,7 +3,7 @@ use context_attribute::context;
 use framework::MainOutput;
 use types::{hardware::Interface, image::Image, CameraPosition};
 
-use crate::CyclerInstance;
+use super::CyclerInstance;
 
 pub struct ImageReceiver {}
 

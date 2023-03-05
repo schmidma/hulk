@@ -9,7 +9,7 @@ use types::{
     PathObstacle, PathSegment, Side, WorldState,
 };
 
-use crate::path_planner::PathPlanner;
+use crate::control::path_planner::PathPlanner;
 
 pub struct WalkPathPlanner<'cycle> {
     field_dimensions: &'cycle FieldDimensions,
