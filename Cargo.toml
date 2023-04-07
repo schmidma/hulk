@@ -2,13 +2,11 @@
 members = [
   "crates/aliveness",
   "crates/audio",
-  "crates/build_script_helpers",
   "crates/code_generation",
   "crates/communication",
   "crates/constants",
   "crates/context_attribute",
   "crates/control",
-  "crates/cyclers",
   "crates/filtering",
   "crates/framework",
   "crates/hulk",
@@ -23,10 +21,9 @@ members = [
   "crates/source_analyzer",
   "crates/spl_network",
   "crates/spl_network_messages",
-  "crates/structs",
   "crates/types",
   "crates/vision",
-  "tools/behavior_simulator",
+  # "tools/behavior_simulator",
   "tools/camera_matrix_extractor",
   "tools/depp",
   "tools/fanta",
@@ -41,7 +38,7 @@ alsa = "0.7.0"
 aliveness = { path = "crates/aliveness" }
 approx = "0.5.1"
 audio = { path = "crates/audio" }
-behavior_simulator = { path = "tools/behavior_simulator" }
+# behavior_simulator = { path = "tools/behavior_simulator" }
 awaitgroup = "0.6.0"
 base64 = "0.13.0"
 bat = { version = "0.21.0", default-features = false, features = [
@@ -64,7 +61,6 @@ context_attribute = { path = "crates/context_attribute" }
 control = { path = "crates/control" }
 convert_case = "0.6.0"
 ctrlc = { version = "3.2.3", features = ["termination"] }
-cyclers = { path = "crates/cyclers" }
 eframe = { version = "0.21.0", features = ["persistence"] }
 egui_dock = { version = "0.4.2", git = "https://github.com/knoellle/egui_dock/", tag = "0.4.2", features = [
   "serde",
@@ -120,10 +116,10 @@ splines = {version = "4.2.0", features = ["serde"]}
 spl_network = { path = "crates/spl_network" }
 spl_network_messages = { path = "crates/spl_network_messages" }
 structopt = "0.3.26"
-structs = { path = "crates/structs" }
 syn = { version = "1.0.101", features = ["full", "extra-traits"] }
 tempfile = "3.3.0"
 thiserror = "1.0.37"
+threadbound = "0.1.6"
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-tungstenite = "0.17.2"
 tokio-util = "0.7.4"
