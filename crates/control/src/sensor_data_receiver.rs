@@ -3,7 +3,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use color_eyre::{eyre::WrapErr, Result};
 use context_attribute::context;
 use framework::MainOutput;
-use types::{hardware::Interface, CycleTime, SensorData};
+use hardware::{SensorInterface, TimeInterface};
+use types::{CycleTime, SensorData};
 
 pub struct SensorDataReceiver {
     last_cycle_start: SystemTime,
@@ -30,7 +31,10 @@ impl SensorDataReceiver {
         })
     }
 
-    pub fn cycle(&mut self, context: CycleContext<impl Interface>) -> Result<MainOutputs> {
+    pub fn cycle(
+        &mut self,
+        context: CycleContext<impl SensorInterface + TimeInterface>,
+    ) -> Result<MainOutputs> {
         let sensor_data = context
             .hardware_interface
             .read_from_sensors()
