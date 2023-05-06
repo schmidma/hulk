@@ -561,22 +561,29 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "clap 4.2.7",
+ "code_generation",
  "color-eyre",
  "communication",
  "control",
+ "convert_case",
  "ctrlc",
  "fern",
  "framework",
+ "hardware",
  "log",
  "mlua",
  "nalgebra",
  "parking_lot",
+ "proc-macro2",
+ "quote",
  "serde",
  "serde_json",
  "serialize_hierarchy",
+ "source_analyzer",
  "spl_network_messages",
  "tokio",
  "tokio-util",
+ "toml",
  "types",
 ]
 
@@ -1819,9 +1826,9 @@ dependencies = [
 
 [[package]]
 name = "fast_image_resize"
-version = "2.7.1"
+version = "2.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9b6b039ef8d0d6ae9e55dc53da0ee544bcff3e960cb033cb917e19e735cb86b"
+checksum = "96b758d4361841076b6eb911a4405bfa8835d9afa6310a84ae0f5ebbd6dbd372"
 dependencies = [
  "num-traits",
  "thiserror",
@@ -2288,31 +2295,6 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "zbus",
-]
-
-[[package]]
-name = "hulk_behavior_simulator"
-version = "0.1.0"
-dependencies = [
- "code_generation",
- "color-eyre",
- "communication",
- "control",
- "convert_case",
- "framework",
- "hardware",
- "ittapi",
- "nalgebra",
- "proc-macro2",
- "quote",
- "serde",
- "serialize_hierarchy",
- "source_analyzer",
- "spl_network_messages",
- "tokio",
- "tokio-util",
- "toml",
- "types",
 ]
 
 [[package]]
@@ -3735,9 +3717,9 @@ checksum = "bebd363326d05ec3e2f532ab7660680f3b02130d780c299bca73469d521bc0ed"
 
 [[package]]
 name = "serde"
-version = "1.0.160"
+version = "1.0.162"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb2f3770c8bce3bcda7e149193a069a0f4365bda1fa5cd88e03bca26afc1216c"
+checksum = "71b2f6e1ab5c2b98c05f0f35b236b22e8df7ead6ffbf51d7808da7f8817e7ab6"
 dependencies = [
  "serde_derive",
 ]
@@ -3774,9 +3756,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.160"
+version = "1.0.162"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "291a097c63d8497e00160b166a967a4a79c64f3facdd01cbd7502231688d77df"
+checksum = "a2a0814352fd64b58489904a44ea8d90cb1a91dcb6b4f5ebabc32c8318e93cb6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3807,9 +3789,9 @@ dependencies = [
 
 [[package]]
 name = "serde_test"
-version = "1.0.160"
+version = "1.0.162"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c95a500e3923258f7fc3a16bf29934e403aef5ca1096e184d85e3b1926675e8"
+checksum = "2b2931818f5d80d6bbe619cc30edd53b822fac51e1f6833cd4659072d701721b"
 dependencies = [
  "serde",
 ]
