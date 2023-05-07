@@ -27,6 +27,7 @@ pub struct CycleContext {
     pub center_head_position: Parameter<HeadJoints<f32>, "center_head_position">,
     pub inner_maximum_pitch: Parameter<f32, "head_motion.inner_maximum_pitch">,
     pub maximum_velocity: Parameter<HeadJoints<f32>, "head_motion.maximum_velocity">,
+    pub smoothing_factor: Parameter<f32, "head_motion.smoothing_factor">,
     pub outer_maximum_pitch: Parameter<f32, "head_motion.outer_maximum_pitch">,
     pub outer_yaw: Parameter<f32, "head_motion.outer_yaw">,
 
@@ -69,6 +70,8 @@ impl HeadMotion {
                 + (raw_request.pitch - self.last_request.pitch)
                     .clamp(-maximum_movement.pitch, maximum_movement.pitch),
         };
+        let controlled_request = self.last_request
+            + (controlled_request - self.last_request) * *context.smoothing_factor;
 
         let pitch_max = if controlled_request.yaw.abs() >= *context.outer_yaw {
             *context.outer_maximum_pitch
@@ -86,7 +89,7 @@ impl HeadMotion {
             yaw: controlled_request.yaw,
         };
 
-        self.last_request = controlled_request;
+        self.last_request = clamped_request;
         Ok(MainOutputs {
             head_joints_command: HeadJointsCommand {
                 positions: clamped_request,
