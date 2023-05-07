@@ -338,7 +338,7 @@ fn generate_goal_line_kick_targets(
             field_dimensions.length / 2.0,
             -field_dimensions.goal_inner_width / 4.0
         ];
-    vec![left_goal_half, right_goal_half]
+    vec![left_goal_half]
 }
 
 fn kick_decisions_from_targets(
@@ -398,11 +398,11 @@ fn compute_kick_pose(
     let shot_angle = UnitComplex::new(kick_info.shot_angle);
     let offset_to_ball = kick_info.offset;
     match side {
-        Side::Left => ball_to_ground * shot_angle * kick_rotation * Isometry2::from(offset_to_ball),
+        Side::Left => ball_to_ground * kick_rotation * shot_angle * Isometry2::from(offset_to_ball),
         Side::Right => {
             ball_to_ground
-                * shot_angle.inverse()
                 * kick_rotation
+                * shot_angle.inverse()
                 * Isometry2::from(mirror_kick_offset(offset_to_ball))
         }
     }

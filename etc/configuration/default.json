@@ -268,7 +268,7 @@
     "measurement_matching_distance": 1.0,
     "hypothesis_merge_distance": 1.0,
     "process_noise": [0.005, 0.005, 0.2, 0.2],
-    "measurement_noise": [3.0, 5.0],
+    "measurement_noise": [3000.0, 5000.0],
     "initial_covariance": [0.5, 0.5, 0.5, 0.5],
     "visible_validity_exponential_decay_factor": 0.96,
     "hidden_validity_exponential_decay_factor": 0.999,
@@ -307,9 +307,9 @@
     "network_robot_measurement_noise": [3.0, 5.0],
     "initial_covariance": [0.25, 0.25],
     "measurement_count_threshold": 10,
-    "use_feet_detection_measurements": true,
+    "use_feet_detection_measurements": false,
     "use_robot_detection_measurements": false,
-    "use_sonar_measurements": true,
+    "use_sonar_measurements": false,
     "robot_obstacle_radius_at_hip_height": 0.2,
     "robot_obstacle_radius_at_foot_height": 0.2,
     "unknown_obstacle_radius": 0.15,
@@ -335,8 +335,8 @@
   "step_planner": {
     "injected_step": null,
     "max_step_size": {
-      "forward": 0.055,
-      "left": 0.12,
+      "forward": 0.045,
+      "left": 0.1,
       "turn": 1.2
     },
     "max_step_size_backwards": 0.03,
@@ -352,7 +352,7 @@
     "arm_stiffness": 0.8,
     "backward_foot_support_offset": -0.03,
     "base_foot_lift": 0.01,
-    "base_step_duration": { "nanos": 240000000, "secs": 0 },
+    "base_step_duration": { "nanos": 260000000, "secs": 0 },
     "emergency_foot_lift": 0.03,
     "emergency_step": { "forward": 0.0, "left": 0.1, "turn": 0.0 },
     "emergency_step_duration": { "nanos": 280000000, "secs": 0 },
@@ -458,12 +458,12 @@
     ],
     "turn": [
       {
-        "base_step": { "forward": 0.0, "left": 0.0, "turn": 0.8 },
+        "base_step": { "forward": 0.04, "left": 0.0, "turn": 0.8 },
         "hip_pitch_overrides": null,
         "ankle_pitch_overrides": null
       },
       {
-        "base_step": { "forward": 0.06, "left": 0.0, "turn": 0.2 },
+        "base_step": { "forward": 0.06, "left": 0.0, "turn": 0.3 },
         "hip_pitch_overrides": [
           { "value": 0.0, "timepoint": { "nanos": 0, "secs": 0 } },
           { "value": 0.0, "timepoint": { "nanos": 100000000, "secs": 0 } },
@@ -727,23 +727,23 @@
     "forward": {
       "offset": [-0.23, 0.05],
       "shot_angle": 0.0,
-      "reached_thresholds": [0.06, 0.03, 0.1],
+      "reached_thresholds": [0.03, 0.02, 0.1],
       "shot_distance": 4.0,
       "enabled": true
     },
     "turn": {
       "offset": [-0.17, -0.1],
       "shot_angle": -1.0,
-      "reached_thresholds": [0.04, 0.04, 0.1],
+      "reached_thresholds": [0.03, 0.02, 0.2],
       "shot_distance": 3.5,
       "enabled": true
     },
     "side": {
       "offset": [-0.02, 0.2],
       "shot_angle": 1.57,
-      "reached_thresholds": [0.05, 0.06, 0.1],
+      "reached_thresholds": [0.0, 0.0, 0.0],
       "shot_distance": 0.5,
-      "enabled": true
+      "enabled": false
     }
   },
   "kick_selector": {
