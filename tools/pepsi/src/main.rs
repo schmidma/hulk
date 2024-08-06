@@ -1,7 +1,12 @@
 use std::path::PathBuf;
 
 use clap::{CommandFactory, Parser, Subcommand};
-use color_eyre::{config::HookBuilder, eyre::WrapErr, Result};
+use color_eyre::{
+    config::HookBuilder,
+    eyre::{ContextCompat, WrapErr},
+    Result,
+};
+use repository::{find_root::find_repository_root, inspect_version::check_for_update};
 
 use crate::aliveness::{aliveness, Arguments as AlivenessArguments};
 use analyze::{analyze, Arguments as AnalyzeArguments};
@@ -19,7 +24,6 @@ use power_off::{power_off, Arguments as PoweroffArguments};
 use pre_game::{pre_game, Arguments as PreGameArguments};
 use reboot::{reboot, Arguments as RebootArguments};
 use recording::{recording, Arguments as RecordingArguments};
-use repository::{get_repository_root, Repository};
 use sdk::{sdk, Arguments as SdkArguments};
 use shell::{shell, Arguments as ShellArguments};
 use upload::{upload, Arguments as UploadArguments};
@@ -52,80 +56,80 @@ async fn main() -> Result<()> {
     HookBuilder::new().display_env_section(false).install()?;
 
     let arguments = Arguments::parse();
-    let repository_root = match arguments.repository_root {
-        Some(repository_root) => Ok(repository_root),
-        None => get_repository_root()
-            .await
-            .wrap_err("failed to get repository root"),
-    };
-    let repository = repository_root.map(Repository::new);
-    if let Ok(repository) = &repository {
-        repository.check_new_version_available(env!("CARGO_PKG_VERSION"), "tools/pepsi")?;
+    let repository_root = arguments
+        .repository_root
+        .or_else(|| find_repository_root())
+        .wrap_err("failed to find repository root");
+    if let Ok(repository_root) = repository_root {
+        check_for_update(
+            env!("CARGO_PKG_VERSION"),
+            repository_root.join("tools/pepsi/Cargo.toml"),
+        )?;
     }
 
     match arguments.command {
-        Command::Analyze(arguments) => analyze(arguments, &repository?)
+        Command::Analyze(arguments) => analyze(arguments, repository_root)
             .await
             .wrap_err("failed to execute analyze command")?,
         Command::Aliveness(arguments) => aliveness(arguments)
             .await
             .wrap_err("failed to execute aliveness command")?,
-        Command::Build(arguments) => cargo(arguments, &repository?, CargoCommand::Build)
+        Command::Build(arguments) => cargo(arguments, repository_root?, CargoCommand::Build)
             .await
             .wrap_err("failed to execute build command")?,
-        Command::Check(arguments) => cargo(arguments, &repository?, CargoCommand::Check)
+        Command::Check(arguments) => cargo(arguments, repository_root?, CargoCommand::Check)
             .await
             .wrap_err("failed to execute check command")?,
-        Command::Clippy(arguments) => cargo(arguments, &repository?, CargoCommand::Clippy)
+        Command::Clippy(arguments) => cargo(arguments, repository_root?, CargoCommand::Clippy)
             .await
             .wrap_err("failed to execute clippy command")?,
-        Command::Communication(arguments) => communication(arguments, &repository?)
+        Command::Communication(arguments) => communication(arguments, repository_root?)
             .await
             .wrap_err("failed to execute communication command")?,
         Command::Completions(arguments) => completions(arguments, Arguments::command())
             .await
             .wrap_err("failed to execute completion command")?,
-        Command::Gammaray(arguments) => gammaray(arguments, &repository?)
+        Command::Gammaray(arguments) => gammaray(arguments, repository_root?)
             .await
             .wrap_err("failed to execute gammaray command")?,
         Command::Hulk(arguments) => hulk(arguments)
             .await
             .wrap_err("failed to execute hulk command")?,
-        Command::Location(arguments) => location(arguments, &repository?)
+        Command::Location(arguments) => location(arguments, repository_root?)
             .await
             .wrap_err("failed to execute location command")?,
         Command::Logs(arguments) => logs(arguments)
             .await
             .wrap_err("failed to execute logs command")?,
         Command::Ping(arguments) => ping(arguments).await,
-        Command::Playernumber(arguments) => player_number(arguments, &repository?)
+        Command::Playernumber(arguments) => player_number(arguments, repository_root?)
             .await
             .wrap_err("failed to execute player_number command")?,
         Command::Postgame(arguments) => post_game(arguments)
             .await
             .wrap_err("failed to execute post_game command")?,
-        Command::Poweroff(arguments) => power_off(arguments)
+        Command::Poweroff(arguments) => power_off(arguments, repository_root)
             .await
             .wrap_err("failed to execute power_off command")?,
-        Command::Pregame(arguments) => pre_game(arguments, &repository?)
+        Command::Pregame(arguments) => pre_game(arguments, repository_root?)
             .await
             .wrap_err("failed to execute pre_game command")?,
         Command::Reboot(arguments) => reboot(arguments)
             .await
             .wrap_err("failed to execute reboot command")?,
-        Command::Recording(arguments) => recording(arguments, &repository?)
+        Command::Recording(arguments) => recording(arguments, repository_root?)
             .await
             .wrap_err("failed to execute recording command")?,
-        Command::Run(arguments) => cargo(arguments, &repository?, CargoCommand::Run)
+        Command::Run(arguments) => cargo(arguments, repository_root?, CargoCommand::Run)
             .await
             .wrap_err("failed to execute run command")?,
-        Command::Sdk(arguments) => sdk(arguments, &repository?)
+        Command::Sdk(arguments) => sdk(arguments, repository_root?)
             .await
             .wrap_err("failed to execute sdk command")?,
         Command::Shell(arguments) => shell(arguments)
             .await
             .wrap_err("failed to execute shell command")?,
-        Command::Upload(arguments) => upload(arguments, &repository?)
+        Command::Upload(arguments) => upload(arguments, repository_root?)
             .await
             .wrap_err("failed to execute upload command")?,
         Command::Wireless(arguments) => wireless(arguments)

@@ -7,13 +7,13 @@ homepage.workspace = true
 
 [dependencies]
 aliveness = { workspace = true }
+argument_parsers = { workspace = true }
 bat = { workspace = true }
 clap = { workspace = true }
 clap_complete = { workspace = true }
-argument_parsers = { workspace = true }
 color-eyre = { workspace = true }
-constants = { workspace = true }
 futures-util = { workspace = true }
+glob = { workspace = true }
 indicatif = { workspace = true }
 nao = { workspace = true }
 opn = { workspace = true }

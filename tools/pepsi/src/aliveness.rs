@@ -1,7 +1,11 @@
-use std::{collections::BTreeMap, net::IpAddr, num::ParseIntError, time::Duration};
+use std::{collections::BTreeMap, net::IpAddr, num::ParseIntError, path::Path, time::Duration};
 
 use clap::{arg, Args};
-use color_eyre::owo_colors::{OwoColorize, Style};
+use color_eyre::{
+    eyre::Context,
+    owo_colors::{OwoColorize, Style},
+    Result,
+};
 
 use aliveness::{
     query_aliveness,
@@ -9,7 +13,7 @@ use aliveness::{
     AlivenessError, AlivenessState, Battery, JointsArray,
 };
 use argument_parsers::NaoAddress;
-use constants::OS_VERSION;
+use repository::configuration::get_os_version;
 
 #[derive(Args)]
 pub struct Arguments {
@@ -41,7 +45,10 @@ pub enum Error {
     SerializeFailed(serde_json::Error),
 }
 
-pub async fn aliveness(arguments: Arguments) -> Result<(), Error> {
+pub async fn aliveness(
+    arguments: Arguments,
+    repository_root: Result<impl AsRef<Path>>,
+) -> Result<(), Error> {
     let states = query_aliveness_list(&arguments)
         .await
         .map_err(Error::QueryFailed)?;
@@ -53,7 +60,10 @@ pub async fn aliveness(arguments: Arguments) -> Result<(), Error> {
     } else if arguments.verbose {
         print_verbose(&states);
     } else {
-        print_summary(&states);
+        let expected_os_version = get_os_version(repository_root?)
+            .await
+            .wrap_err("failed to get OS version")?;
+        print_summary(&states, expected_os_version);
     }
     Ok(())
 }
@@ -136,8 +146,8 @@ impl SummaryElements {
         }
     }
 
-    fn append_os_version(&mut self, version: &str) {
-        if version != OS_VERSION {
+    fn append_os_version(&mut self, version: &str, expected_os_version: &str) {
+        if version != expected_os_version {
             self.append(OS_ICON, version, Style::new());
         }
     }
@@ -153,7 +163,7 @@ impl SummaryElements {
     }
 }
 
-fn print_summary(states: &AlivenessList) {
+fn print_summary(states: &AlivenessList, expected_os_version: &str) {
     for (ip, state) in states.iter() {
         let id = match ip {
             IpAddr::V4(ip) => ip.octets()[3],
@@ -164,7 +174,7 @@ fn print_summary(states: &AlivenessList) {
 
         output.append_battery(&state.battery);
         output.append_temperature(&state.temperature);
-        output.append_os_version(&state.hulks_os_version);
+        output.append_os_version(&state.hulks_os_version, expected_os_version);
         let SystemServices {
             hal,
             hula,
