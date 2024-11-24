@@ -1,6 +1,6 @@
 use color_eyre::{eyre::WrapErr, Result};
 use context_attribute::context;
-use framework::AdditionalOutput;
+use framework::{AdditionalOutput, MainOutput};
 use hardware::ActuatorInterface;
 use serde::{Deserialize, Serialize};
 use types::{
@@ -33,7 +33,9 @@ pub struct CycleContext {
 
 #[context]
 #[derive(Default)]
-pub struct MainOutputs {}
+pub struct MainOutputs {
+    pub actuated_motor_commands: MainOutput<MotorCommands<Joints<f32>>>,
+}
 
 impl CommandSender {
     pub fn new(_context: CreationContext) -> Result<Self> {
@@ -71,6 +73,8 @@ impl CommandSender {
         context.last_actuated_motor_commands.positions = motor_commands.positions;
         context.last_actuated_motor_commands.stiffnesses = motor_commands.stiffnesses;
 
-        Ok(MainOutputs {})
+        Ok(MainOutputs {
+            actuated_motor_commands: (*motor_commands).into(),
+        })
     }
 }
