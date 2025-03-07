@@ -85,9 +85,8 @@ bevy-inspector-egui = "0.29.1"
 bevy_asset_loader = "0.22.0"
 bevy_egui = "0.33.0"
 bevy_obj = "0.15"
-bevy_panorbit_camera = { git = "https://github.com/schmidma/bevy_panorbit_camera.git", rev = "dd14ccf4416b6259fc53d80f696cdb358ed61d00", features = [
-  "bevy_egui",
-] }
+bevy_panorbit_camera = { version = "0.23.0", features = ["bevy_egui"] }
+bevy-tokio-tasks = "0.15.0"
 bincode = "1.3.3"
 bindgen = "0.71.1"
 buffered_watch = { path = "crates/buffered_watch" }

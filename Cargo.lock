@@ -867,6 +867,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-tokio-tasks"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34969107e5990787471137983ac7ff54f4ec3aa8913d13b91d3b5b54a20f11b8"
+dependencies = [
+ "bevy_app",
+ "bevy_ecs",
+ "tokio",
+]
+
+[[package]]
 name = "bevy_a11y"
 version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1490,8 +1501,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_panorbit_camera"
-version = "0.22.2"
-source = "git+https://github.com/schmidma/bevy_panorbit_camera.git?rev=dd14ccf4416b6259fc53d80f696cdb358ed61d00#dd14ccf4416b6259fc53d80f696cdb358ed61d00"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e22224619230504b7a439ba05df41e4e364b848e1cf336c60bb9e44fd38c273"
 dependencies = [
  "bevy",
  "bevy_egui 0.33.0",
@@ -5673,8 +5685,10 @@ dependencies = [
 name = "mio"
 version = "0.1.0"
 dependencies = [
+ "aliveness",
  "bevy",
  "bevy-inspector-egui",
+ "bevy-tokio-tasks",
  "bevy_asset_loader",
  "bevy_egui 0.33.0",
  "bevy_obj",
@@ -5685,6 +5699,8 @@ dependencies = [
  "coordinate_systems",
  "egui_dock",
  "geometry",
+ "hulk_widgets",
+ "itertools 0.14.0",
  "linear_algebra",
  "nalgebra",
  "repository",

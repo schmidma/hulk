@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::absolute};
 
 use bevy::prelude::*;
+use bevy_tokio_tasks::TokioTasksRuntime;
 use communication::{
     client::{protocol::SubscriptionEvent, BinarySubscriptionHandle, Client, ClientHandle, Status},
     messages::Path,
@@ -16,7 +17,7 @@ use types::{
 };
 use urdf_rs::Geometry;
 
-use crate::{async_runtime::AsyncRuntime, ball::BallAssets, parameters::Parameters};
+use crate::{ball::BallAssets, parameters::Parameters};
 
 pub struct NaoPlugin;
 
@@ -197,7 +198,7 @@ where
 #[derive(Component)]
 pub struct Nao {
     pub address: String,
-    pub connected: bool,
+    pub connection_intent: bool,
     pub client: ClientHandle,
     sensor_data: Subscription<Joints<f32>>,
     robot_to_ground: Subscription<Option<Isometry3<Robot, Ground>>>,
@@ -265,7 +266,7 @@ impl Nao {
         Self {
             client,
             address: String::new(),
-            connected: false,
+            connection_intent: false,
             sensor_data,
             robot_to_ground,
             ground_to_field,
@@ -278,9 +279,9 @@ impl Nao {
     }
 }
 
-fn handle_communication(mut naos: Query<(&Nao, &mut Visibility)>, runtime: Res<AsyncRuntime>) {
+fn handle_communication(mut naos: Query<(&Nao, &mut Visibility)>, runtime: Res<TokioTasksRuntime>) {
     for (nao, mut visibility) in naos.iter_mut() {
-        let status = runtime.runtime.block_on(nao.client.status());
+        let status = runtime.runtime().block_on(nao.client.status());
         *visibility = match status {
             Status::Disconnected | Status::Connecting => Visibility::Hidden,
             Status::Connected => Visibility::Visible,
@@ -295,7 +296,7 @@ pub fn spawn_robot(
     mut commands: Commands,
     mut spawn_robot: EventReader<SpawnRobot>,
     robot_specification: Res<RobotSpecification>,
-    runtime: Res<AsyncRuntime>,
+    runtime: Res<TokioTasksRuntime>,
     ball_assets: Res<BallAssets>,
 ) {
     for _ in spawn_robot.read() {
@@ -331,7 +332,7 @@ pub fn spawn_robot(
                     links.insert(link.name.clone(), id);
                 }
             })
-            .insert(runtime.runtime.block_on(Nao::new(&links, ball)));
+            .insert(runtime.runtime().block_on(Nao::new(&links, ball)));
         for joint in robot_specification.joints.values() {
             let parent = links.get(&joint.parent).unwrap();
             let child = links.get(&joint.child).unwrap();

@@ -1,17 +1,18 @@
 use std::f32::consts::PI;
 
-use async_runtime::AsyncRuntimePlugin;
+use aliveness::AlivenessPlugin;
 use ball::BallPlugin;
 use bevy::{pbr::DirectionalLightShadowMap, prelude::*};
 use bevy_obj::ObjPlugin;
 use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
+use bevy_tokio_tasks::TokioTasksPlugin;
 use color_eyre::eyre::Result;
 use field::FieldPlugin;
 use nao::NaoPlugin;
 use parameters::Parameters;
 use ui::UiPlugin;
 
-mod async_runtime;
+mod aliveness;
 mod ball;
 mod field;
 mod nao;
@@ -23,14 +24,15 @@ fn main() -> Result<()> {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(ObjPlugin)
-        .add_plugins(UiPlugin)
+        .add_plugins(TokioTasksPlugin::default())
         .add_plugins(PanOrbitCameraPlugin)
+        .add_plugins(UiPlugin)
+        .add_plugins(AlivenessPlugin)
         .insert_resource(Parameters::default())
         .insert_resource(DirectionalLightShadowMap { size: 4096 })
         .add_plugins(BallPlugin)
         .add_plugins(FieldPlugin)
         .add_plugins(NaoPlugin)
-        .add_plugins(AsyncRuntimePlugin)
         .add_systems(Startup, setup_camera)
         .add_systems(Startup, setup_light)
         .add_systems(Startup, setup_gizmos)

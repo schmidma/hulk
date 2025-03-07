@@ -1,13 +1,17 @@
-use bevy::{prelude::*, render::camera::Viewport, window::PrimaryWindow};
+use std::net::IpAddr;
+
+use bevy::{ecs::system::SystemState, prelude::*, render::camera::Viewport, window::PrimaryWindow};
 use bevy_egui::{
-    egui::{Rect, TextEdit, Ui, Widget, WidgetText},
+    egui::{Color32, Rect, Ui, WidgetText},
     EguiContext, EguiContextSettings, EguiPlugin, EguiPostUpdateSet,
 };
 use bevy_panorbit_camera::PanOrbitCameraSystemSet;
+use bevy_tokio_tasks::TokioTasksRuntime;
 use egui_dock::{egui::Context, DockArea, DockState, NodeIndex, Style};
+use hulk_widgets::CompletionEdit;
 
 use crate::{
-    async_runtime::AsyncRuntime,
+    aliveness::{AliveRobots, PossibleNaoAddresses},
     nao::{Nao, SpawnRobot},
     MainCamera,
 };
@@ -54,30 +58,58 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                 *self.viewport = ui.clip_rect();
             }
             Tab::Connections => {
-                let runtime = self
-                    .world
-                    .get_resource::<AsyncRuntime>()
-                    .unwrap()
-                    .runtime
-                    .handle()
-                    .clone();
-                let mut naos = self.world.query::<&mut Nao>();
-                for mut nao in naos.iter_mut(self.world) {
-                    if TextEdit::singleline(&mut nao.address)
-                        .hint_text("Address")
-                        .ui(ui)
-                        .changed()
-                    {
-                        let communication = nao.client.clone();
-                        let address = format!("ws://{}:1337", nao.address);
-                        runtime.spawn(async move {
-                            communication.set_address(address).await;
-                        });
-                    };
-                    if ui.checkbox(&mut nao.connected, "Connect").changed() {
+                type SystemParameters = (
+                    Res<'static, TokioTasksRuntime>,
+                    Res<'static, AliveRobots>,
+                    Res<'static, PossibleNaoAddresses>,
+                    Query<'static, 'static, &'static mut Nao>,
+                );
+                let mut system_state: SystemState<SystemParameters> = SystemState::new(self.world);
+                let (runtime, alive_robots, possible_addresses, mut naos) =
+                    system_state.get_mut(self.world);
+
+                for mut nao in naos.iter_mut() {
+                    let communication = nao.client.clone();
+                    let address_input = CompletionEdit::new(
+                        ui.id().with("nao-selector"),
+                        &possible_addresses.0,
+                        &mut nao.address,
+                    )
+                    .ui(ui, |ui, selected, ip| {
+                        let show_green = alive_robots.is_reachable(&IpAddr::V4(*ip));
+                        let color = if show_green {
+                            Color32::GREEN
+                        } else {
+                            Color32::WHITE
+                        };
+                        ui.selectable_label(selected, WidgetText::from(ip.to_string()).color(color))
+                    });
+                    if address_input.changed() || address_input.lost_focus() {
+                        match &nao.address.split_once(":") {
+                            None | Some((_, "")) => {
+                                let address = &nao.address;
+                                let address = format!("ws://{address}:1337");
+                                runtime.spawn_background_task(|_| async move {
+                                    communication.set_address(address).await;
+                                });
+                            }
+                            Some((ip, port)) => {
+                                let address = format!("ws://{ip}:{port}");
+                                runtime.spawn_background_task(|_| async move {
+                                    communication.set_address(address).await;
+                                });
+                            }
+                        }
+                        nao.connection_intent = true;
                         let client = nao.client.clone();
-                        let connected = nao.connected;
-                        runtime.spawn(async move {
+                        runtime.spawn_background_task(|_| async move {
+                            client.connect().await;
+                        });
+                    }
+                    if ui.checkbox(&mut nao.connection_intent, "Connect").changed() {
+                        let client = nao.client.clone();
+                        let connected = nao.connection_intent;
+                        runtime.spawn_background_task(move |_| async move {
                             if connected {
                                 client.connect().await;
                             } else {
@@ -124,15 +156,15 @@ impl UiState {
         }
     }
 
-    fn ui(&mut self, world: &mut World, ctx: &mut Context) {
+    fn ui(&mut self, world: &mut World, context: &mut Context) {
         let mut tab_viewer = TabViewer {
             world,
             viewport: &mut self.viewport,
         };
         DockArea::new(&mut self.state)
             .show_add_buttons(true)
-            .style(Style::from_egui(ctx.style().as_ref()))
-            .show(ctx, &mut tab_viewer);
+            .style(Style::from_egui(context.style().as_ref()))
+            .show(context, &mut tab_viewer);
     }
 }
 
