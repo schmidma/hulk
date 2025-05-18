@@ -3,8 +3,8 @@ use coordinate_systems::{Field, Ground, Robot, Walk};
 use kick_steps::KickSteps;
 use linear_algebra::{Isometry3, Orientation3, Point2, Point3};
 use mode::{
-    catching::Catching, kicking::Kicking, standing::Standing, starting::Starting,
-    stopping::Stopping, walking::Walking, Mode,
+    kicking::Kicking, standing::Standing, starting::Starting, stopping::Stopping, walking::Walking,
+    Mode,
 };
 use parameters::Parameters;
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
@@ -104,8 +104,7 @@ impl Engine {
             Mode::Starting(Starting { step })
             | Mode::Walking(Walking { step, .. })
             | Mode::Kicking(Kicking { step, .. })
-            | Mode::Stopping(Stopping { step, .. })
-            | Mode::Catching(Catching { step, .. }) => Some(step.plan.support_side),
+            | Mode::Stopping(Stopping { step, .. }) => Some(step.plan.support_side),
         }
     }
 }
