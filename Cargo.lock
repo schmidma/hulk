@@ -2404,15 +2404,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cmake"
-version = "0.1.54"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7caa3f9de89ddbe2c607f4101924c5abec803763ae9534e4f4d7d8f84aa81f0"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "code_generation"
 version = "0.1.0"
 dependencies = [
@@ -2513,28 +2504,6 @@ dependencies = [
  "tokio-tungstenite",
  "tokio-util",
  "uuid",
-]
-
-[[package]]
-name = "compiled-nn"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1995a40abb8030d5e84cac9cc8917f1a79ea11bf32bf0cc90a64e7a578e1dc4d"
-dependencies = [
- "compiled-nn-bindings",
-]
-
-[[package]]
-name = "compiled-nn-bindings"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "015b3be08e86208bcf26d3aa12d46348380e24d88f1bc8ac0eb98af5f8fd4860"
-dependencies = [
- "bindgen 0.63.0",
- "cmake",
- "glob",
- "pkg-config",
- "walkdir",
 ]
 
 [[package]]
@@ -9274,7 +9243,6 @@ dependencies = [
  "approx",
  "calibration",
  "color-eyre",
- "compiled-nn",
  "context_attribute",
  "coordinate_systems",
  "fast_image_resize",
