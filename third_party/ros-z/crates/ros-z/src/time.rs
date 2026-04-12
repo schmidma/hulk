@@ -523,12 +523,12 @@ mod tests {
     #[test]
     fn duration_from_secs_and_as_std() {
         let d = Duration::from_secs(3);
-        assert_eq!(d.as_std(), Duration::from_secs(3));
+        assert_eq!(d, Duration::from_secs(3));
     }
 
     #[test]
     fn duration_default_is_zero() {
-        assert_eq!(Duration::default().as_std(), Duration::ZERO);
+        assert_eq!(Duration::default(), Duration::ZERO);
     }
 
     #[test]
@@ -574,9 +574,9 @@ mod tests {
     fn ztime_duration_since() {
         let a = ZTime::from_nanos(5_000_000_000);
         let b = ZTime::from_nanos(3_000_000_000);
-        assert_eq!(a.duration_since(b).as_std(), Duration::from_secs(2));
+        assert_eq!(a.duration_since(b), Duration::from_secs(2));
         // saturates to zero when earlier > self
-        assert_eq!(b.duration_since(a).as_std(), Duration::ZERO);
+        assert_eq!(b.duration_since(a), Duration::ZERO);
     }
 
     #[test]
