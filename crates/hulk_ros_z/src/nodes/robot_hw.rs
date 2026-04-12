@@ -71,11 +71,12 @@ impl ros_z::msg::ZMessage for HighLevelCommand {
 }
 
 pub async fn run(ctx: Arc<ZContext>) -> Result<()> {
-    let node = ctx
-        .create_node("robot_hw")
-        .with_type_description_service()
-        .build()
-        .into_eyre()?;
+    let node = Arc::new(
+        ctx.create_node("robot_hw")
+            .with_type_description_service()
+            .build()
+            .into_eyre()?,
+    );
     // let _config = node
     //     .bind_config_with_metadata_as::<RobotHwConfig>("robot_hw")
     //     .into_eyre()?;

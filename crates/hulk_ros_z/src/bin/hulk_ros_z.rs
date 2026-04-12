@@ -88,6 +88,8 @@ async fn spawn_all(ctx: Arc<ros_z::context::ZContext>) -> Result<RunningStack> {
     let mut join_set = JoinSet::new();
     join_set.spawn(nodes::sim_driver::run(ctx.clone()));
     join_set.spawn(nodes::state_estimator::run(ctx.clone()));
+    join_set.spawn(nodes::safe_pose_checker::run(ctx.clone()));
+    join_set.spawn(nodes::primary_state_filter::run(ctx.clone()));
     join_set.spawn(nodes::behavior::run(ctx.clone()));
     join_set.spawn(nodes::motion::run(ctx.clone()));
     join_set.spawn(nodes::kinematics_provider::run(ctx.clone()));

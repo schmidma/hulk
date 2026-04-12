@@ -4,6 +4,7 @@ use ros_z_msgs::{builtin_interfaces::Time, std_msgs::Header};
 
 pub mod button_event;
 pub mod fall_down_state;
+pub mod is_safe_pose;
 pub mod low_level_command;
 pub mod maybe_ball_position;
 pub mod motion_intent;
@@ -22,6 +23,7 @@ pub use fall_down_state::{
     FallDownState, FALL_DOWN_HAS_FALLEN, FALL_DOWN_IS_FALLING, FALL_DOWN_IS_GETTING_UP,
     FALL_DOWN_IS_READY,
 };
+pub use is_safe_pose::IsSafePose;
 pub use low_level_command::LowLevelCommand;
 pub use maybe_ball_position::{MaybeBallPosition, ZBallPosition};
 pub use motion_intent::{DemoMode, MotionIntent};

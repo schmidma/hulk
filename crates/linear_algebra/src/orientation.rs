@@ -9,17 +9,17 @@ use crate::{Framed, Rotation2, Rotation3, Vector2, Vector3, vector};
 pub type Orientation2<Frame, T = f32> = Framed<Frame, nalgebra::UnitComplex<T>>;
 pub type Orientation3<Frame, T = f32> = Framed<Frame, nalgebra::UnitQuaternion<T>>;
 
-impl<T> FieldTypeInfo for Orientation2<T> {
-    fn field_type() -> FieldType {
-        FieldType::Message(
-            MessageSchema::builder("linear_algebra/msg/Orientation2")
-                .field("re", FieldType::Float32)
-                .field("im", FieldType::Float32)
-                .build()
-                .expect("failed to build schema for Orientation2"),
-        )
-    }
-}
+// impl<T> FieldTypeInfo for Orientation2<T> {
+//     fn field_type() -> FieldType {
+//         FieldType::Message(
+//             MessageSchema::builder("linear_algebra/msg/Orientation2")
+//                 .field("re", FieldType::Float32)
+//                 .field("im", FieldType::Float32)
+//                 .build()
+//                 .expect("failed to build schema for Orientation2"),
+//         )
+//     }
+// }
 
 impl<Frame, T> Orientation2<Frame, T>
 where

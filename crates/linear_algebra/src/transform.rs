@@ -2,6 +2,7 @@ use std::{collections::HashSet, marker::PhantomData, ops::Mul};
 
 use approx::{AbsDiffEq, RelativeEq};
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize, deserialize, serialize};
+use ros_z::FieldTypeInfo;
 use serde::{Deserialize, Serialize};
 
 use crate::framed::Framed;
@@ -11,6 +12,15 @@ pub struct Transform<From, To, Inner> {
     from: PhantomData<From>,
     to: PhantomData<To>,
     pub inner: Inner,
+}
+
+impl<Frame, To, Inner> FieldTypeInfo for Transform<Frame, To, Inner>
+where
+    Inner: FieldTypeInfo,
+{
+    fn field_type() -> ros_z::dynamic::FieldType {
+        Inner::field_type()
+    }
 }
 
 impl<From, To, Inner> Clone for Transform<From, To, Inner>

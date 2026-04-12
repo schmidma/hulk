@@ -8,6 +8,7 @@ use std::{
 
 use approx::{AbsDiffEq, RelativeEq};
 use num_traits::Num;
+use ros_z::FieldTypeInfo;
 use serde::{Deserialize, Serialize};
 
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize, deserialize, serialize};
@@ -19,6 +20,15 @@ use path_serde::{PathDeserialize, PathIntrospect, PathSerialize, deserialize, se
 pub struct Framed<Frame, Inner> {
     frame: PhantomData<Frame>,
     pub inner: Inner,
+}
+
+impl<Frame, Inner> FieldTypeInfo for Framed<Frame, Inner>
+where
+    Inner: FieldTypeInfo,
+{
+    fn field_type() -> ros_z::dynamic::FieldType {
+        Inner::field_type()
+    }
 }
 
 impl<Frame, Inner> Copy for Framed<Frame, Inner> where Inner: Copy {}

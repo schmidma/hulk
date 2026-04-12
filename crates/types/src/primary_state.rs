@@ -1,4 +1,5 @@
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
+use ros_z::{MessageTypeInfo, TypeHash};
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -25,4 +26,18 @@ pub enum PrimaryState {
     Playing,
     Penalized,
     Finished,
+}
+
+impl MessageTypeInfo for PrimaryState {
+    fn type_name() -> &'static str {
+        "hulk_ros_z/msg/PrimaryState"
+    }
+
+    fn type_hash() -> TypeHash {
+        TypeHash::zero()
+    }
+}
+
+impl ros_z::msg::ZMessage for PrimaryState {
+    type Serdes = ros_z::msg::SerdeCdrSerdes<Self>;
 }
