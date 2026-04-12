@@ -7,7 +7,7 @@ use nalgebra::{
     UnitComplex, UnitQuaternion, Vector2, Vector3,
 };
 use ros_z::{
-    Builder, ExtendedMessageTypeInfo, MessageTypeInfo,
+    Builder, MessageTypeInfo,
     context::ZContextBuilder,
     dynamic::{DynamicMessage, DynamicValue, EnumPayloadValue, EnumValue, FieldType},
 };
@@ -32,7 +32,7 @@ struct MathSnapshot {
     camera_to_ground: Isometry3<f32>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/MathCommand")]
 struct MathCommand {
     target_position: Point3<f64>,
@@ -41,7 +41,7 @@ struct MathCommand {
     mode: MotionMode,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/MotionMode")]
 enum MotionMode {
     Approach,
@@ -224,7 +224,7 @@ fn enum_payload_to_json(payload: &EnumPayloadValue) -> Value {
 
 #[test]
 fn standard_nalgebra_schema_is_basic_only() {
-    let schema = MathSnapshot::message_schema().expect("standard-compatible schema");
+    let schema = MathSnapshot::message_schema();
     assert!(!schema.uses_extended_types());
 
     let image_position = schema
@@ -302,8 +302,8 @@ async fn nalgebra_fields_roundtrip_via_standard_discovery() {
 }
 
 #[test]
-fn extended_message_can_embed_basic_nalgebra_fields() {
-    let schema = MathCommand::extended_message_schema();
+fn single_schema_message_can_embed_basic_nalgebra_fields() {
+    let schema = MathCommand::message_schema();
     assert!(schema.uses_extended_types());
 
     let target_position = schema
@@ -321,18 +321,16 @@ fn extended_message_can_embed_basic_nalgebra_fields() {
         panic!("expected Isometry3 field to stay standard-compatible inside extended schemas");
     };
     assert_eq!(nested.type_name, "nalgebra/msg/Isometry3F32");
-
-    assert!(MathCommand::message_schema().is_none());
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn extended_envelope_uses_extended_discovery_with_basic_nalgebra_fields() {
+async fn single_schema_discovery_works_with_basic_nalgebra_fields() {
     let router = TestRouter::new();
 
     let pub_ctx = create_context_with_router(&router).expect("publisher context");
     let pub_node = pub_ctx
         .create_node("math_command_talker")
-        .with_extended_type_description_service()
+        .with_type_description_service()
         .build()
         .expect("publisher node");
 

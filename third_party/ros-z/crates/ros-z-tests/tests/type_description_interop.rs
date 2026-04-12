@@ -410,7 +410,7 @@ fn test_dynamic_subscriber_from_type_description() {
             // Step 3: Create dynamic subscriber using the schema
             println!("Step 3: Creating dynamic subscriber...");
             let zsub = node
-                .create_sub_impl::<DynamicMessage>("chatter", None)
+                .create_sub_with_type_info::<DynamicMessage>("chatter", None)
                 .with_serdes::<DynamicSerdeCdrSerdes>()
                 .with_dyn_schema(schema.clone())
                 .build()

@@ -1,6 +1,7 @@
 use std::{f32::consts::TAU, ops::Neg};
 
 use num_traits::{One, Zero};
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 use linear_algebra::{Orientation2, Vector2, vector};
@@ -14,10 +15,12 @@ use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "geometry/msg/Direction")]
 pub enum Direction {
     Clockwise,
     Counterclockwise,

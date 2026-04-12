@@ -12,11 +12,10 @@ use crate::{
     context::{GlobalCounter, RemapRules, RuntimeConfigInputs},
     dynamic::{
         DiscoveredTopicSchema, DynPubBuilder, DynSubBuilder, DynamicMessage, DynamicSerdeCdrSerdes,
-        MessageSchema, SchemaDiscovery, TypeDescriptionService, discovered_schema_type_info,
-        schema_type_info,
+        MessageSchema, MessageSchemaTypeDescription, SchemaDiscovery, TypeDescriptionService,
+        discovered_schema_type_info, schema_type_info,
     },
     entity::*,
-    extended_type_description_service::ExtendedTypeDescriptionService,
     graph::Graph,
     msg::{ZMessage, ZService},
     parameter::{
@@ -54,9 +53,6 @@ pub struct ZNode {
     /// Enabled via `ZNodeBuilder::with_type_description_service()`.
     /// The service uses callback mode and requires no background task.
     type_desc_service: Option<TypeDescriptionService>,
-    /// Optional ros-z-specific extended type description service.
-    /// Enabled via `ZNodeBuilder::with_extended_type_description_service()`.
-    extended_type_desc_service: Option<ExtendedTypeDescriptionService>,
     /// Parameter service providing ROS 2-compatible parameter management.
     /// Disabled by default; enable via `ZNodeBuilder::with_parameters()`.
     parameter_service: Option<ParameterService>,
@@ -85,8 +81,6 @@ pub struct ZNodeBuilder {
     pub(crate) runtime_config_inputs: RuntimeConfigInputs,
     /// Whether to enable the type description service for this node.
     pub(crate) enable_type_desc_service: bool,
-    /// Whether to enable the extended type description service for this node.
-    pub(crate) enable_extended_type_desc_service: bool,
     /// Whether to enable parameter services for this node (default: false).
     pub(crate) enable_parameters: bool,
     /// Initial parameter overrides applied at declaration time.
@@ -162,15 +156,6 @@ impl ZNodeBuilder {
     /// ```
     pub fn with_type_description_service(mut self) -> Self {
         self.enable_type_desc_service = true;
-        self
-    }
-
-    /// Enable the ros-z-specific extended type description service for this node.
-    ///
-    /// When enabled, the node exposes `~get_extended_type_description` for
-    /// extended-only schemas such as enums and `Option<T>` fields.
-    pub fn with_extended_type_description_service(mut self) -> Self {
-        self.enable_extended_type_desc_service = true;
         self
     }
 
@@ -284,22 +269,6 @@ impl Builder for ZNodeBuilder {
             None
         };
 
-        let extended_type_desc_service = if self.enable_extended_type_desc_service {
-            debug!("[NOD] Creating extended type description service");
-            let service = ExtendedTypeDescriptionService::new(
-                self.session.clone(),
-                &self.name,
-                &self.namespace,
-                id,
-                &self.counter,
-                &self.clock,
-            )?;
-            info!("[NOD] ExtendedTypeDescriptionService created");
-            Some(service)
-        } else {
-            None
-        };
-
         // Create parameter service if enabled
         let parameter_service = if self.enable_parameters {
             debug!("[NOD] Creating parameter service");
@@ -334,7 +303,6 @@ impl Builder for ZNodeBuilder {
             runtime_config_inputs: self.runtime_config_inputs,
             config_binding_state: Arc::new(parking_lot::Mutex::new(false)),
             type_desc_service,
-            extended_type_desc_service,
             parameter_service,
         })
     }
@@ -368,32 +336,33 @@ impl ZNode {
         debug!("[NOD] Creating publisher: topic={}", topic);
         let mut builder = self.create_pub_impl(topic, Some(T::type_info()));
 
-        match T::message_schema() {
-            Some(schema) => {
-                self.register_schema_with_type_description_service(&schema);
-                builder = builder.with_dyn_schema(schema);
-            }
-            None => {
-                debug!(
-                    "[NOD] No static schema provided for {}, skipping type description registration",
-                    std::any::type_name::<T>()
-                );
-            }
-        }
-
-        if let Err(e) = T::register_type_extensions(self) {
-            warn!(
-                "[NOD] Failed to register non-standard schema extensions for {}: {}",
-                std::any::type_name::<T>(),
-                e
-            );
-        }
+        let schema = T::message_schema();
+        self.register_schema_with_type_description_service(&schema, T::type_hash().to_rihs_string());
+        builder = builder.with_dyn_schema(schema);
 
         builder
     }
 
-    #[doc(hidden)]
-    pub fn create_pub_impl<T>(
+    /// Create a publisher for a message type that does not implement [`MessageTypeInfo`].
+    ///
+    /// This is the explicit escape hatch for publishing a [`crate::msg::ZMessage`] with
+    /// manually supplied DDS type metadata. Unlike [`Self::create_pub`], this does not
+    /// auto-register a runtime schema with the type-description service.
+    ///
+    /// Use this when the caller already knows the advertised ROS type name and hash but
+    /// intentionally does not have a discoverable [`crate::dynamic::MessageSchema`].
+    pub fn create_pub_with_type_info<T>(
+        &self,
+        topic: &str,
+        type_info: Option<crate::entity::TypeInfo>,
+    ) -> ZPubBuilder<T, T::Serdes>
+    where
+        T: ZMessage,
+    {
+        self.create_pub_impl(topic, type_info)
+    }
+
+    fn create_pub_impl<T>(
         &self,
         topic: &str,
         type_info: Option<crate::entity::TypeInfo>,
@@ -440,8 +409,22 @@ impl ZNode {
         self.create_sub_impl(topic, Some(T::type_info()))
     }
 
-    #[doc(hidden)]
-    pub fn create_sub_impl<T>(
+    /// Create a subscriber for a message type that does not implement [`MessageTypeInfo`].
+    ///
+    /// This mirrors [`Self::create_pub_with_type_info`] for callers that need to provide
+    /// manual DDS type metadata while opting out of schema-based discovery.
+    pub fn create_sub_with_type_info<T>(
+        &self,
+        topic: &str,
+        type_info: Option<crate::entity::TypeInfo>,
+    ) -> ZSubBuilder<T, T::Serdes>
+    where
+        T: ZMessage,
+    {
+        self.create_sub_impl(topic, type_info)
+    }
+
+    fn create_sub_impl<T>(
         &self,
         topic: &str,
         type_info: Option<crate::entity::TypeInfo>,
@@ -763,23 +746,6 @@ impl ZNode {
         self.type_desc_service.is_some()
     }
 
-    /// Get a reference to this node's extended type description service, if enabled.
-    pub fn extended_type_description_service(&self) -> Option<&ExtendedTypeDescriptionService> {
-        self.extended_type_desc_service.as_ref()
-    }
-
-    /// Get a mutable reference to this node's extended type description service, if enabled.
-    pub fn extended_type_description_service_mut(
-        &mut self,
-    ) -> Option<&mut ExtendedTypeDescriptionService> {
-        self.extended_type_desc_service.as_mut()
-    }
-
-    /// Check if this node has an extended type description service.
-    pub fn has_extended_type_description_service(&self) -> bool {
-        self.extended_type_desc_service.is_some()
-    }
-
     /// Get access to the global counter for entity ID generation.
     pub fn counter(&self) -> &Arc<GlobalCounter> {
         &self.counter
@@ -936,8 +902,16 @@ impl ZNode {
     /// publisher.publish(&msg)?;
     /// ```
     pub fn create_dyn_pub(&self, topic: &str, schema: Arc<MessageSchema>) -> DynPubBuilder {
-        self.register_schema_with_type_description_service(&schema);
-        self.create_dyn_pub_impl(topic, Some(schema_type_info(&schema)), schema)
+        let type_hash = self.advertised_type_hash_for_schema(&schema);
+        self.register_schema_with_type_description_service(&schema, type_hash.to_rihs_string());
+        self.create_dyn_pub_impl(
+            topic,
+            Some(TypeInfo {
+                name: schema.type_name.clone(),
+                hash: Some(type_hash),
+            }),
+            schema,
+        )
     }
 
     /// Discover the schema that publishers currently expose on a topic.
@@ -1069,9 +1043,13 @@ impl ZNode {
             .with_dyn_schema(schema)
     }
 
-    fn register_schema_with_type_description_service(&self, schema: &Arc<MessageSchema>) {
+    fn register_schema_with_type_description_service(
+        &self,
+        schema: &Arc<MessageSchema>,
+        type_hash: String,
+    ) {
         if let Some(service) = &self.type_desc_service {
-            if let Err(error) = service.register_schema(Arc::clone(schema)) {
+            if let Err(error) = service.register_schema(Arc::clone(schema), type_hash) {
                 warn!(
                     "[NOD] Failed to register schema {} with type description service: {}",
                     schema.type_name, error
@@ -1082,6 +1060,20 @@ impl ZNode {
                     schema.type_name
                 );
             }
+        }
+    }
+
+    fn advertised_type_hash_for_schema(&self, schema: &MessageSchema) -> TypeHash {
+        if schema.uses_extended_types() {
+            let type_hash = crate::schema_json::compute_schema_type_hash(schema)
+                .expect("extended schema must produce a canonical type hash")
+                .to_rihs_string();
+            TypeHash::from_rihs_string(&type_hash)
+                .expect("canonical schema hash must parse as RIHS")
+        } else {
+            schema
+                .compute_type_hash()
+                .expect("standard-compatible schema must produce a type hash")
         }
     }
 }

@@ -35,21 +35,20 @@ impl MessageTypeInfo for ZTime {
 
     fn type_hash() -> TypeHash {
         let rihs_string = Self::message_schema()
-            .unwrap()
             .compute_type_hash()
             .expect("failed to compute type hash")
             .to_rihs_string();
         TypeHash::from_rihs_string(&rihs_string).expect("failed to compute type hash")
     }
 
-    fn message_schema() -> Option<std::sync::Arc<crate::dynamic::MessageSchema>> {
-        Some(Arc::new(crate::dynamic::MessageSchema {
+    fn message_schema() -> std::sync::Arc<crate::dynamic::MessageSchema> {
+        Arc::new(crate::dynamic::MessageSchema {
             type_name: "ros_z/msg/ZTime".to_string(),
             package: "ros_z".to_string(),
             name: "ZTime".to_string(),
             fields: vec![FieldSchema::new("duration", Duration::field_type())],
             type_hash: None,
-        }))
+        })
     }
 }
 

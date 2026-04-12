@@ -1,4 +1,10 @@
-use ros_z::{MessageTypeInfo, entity::TypeHash};
+use std::sync::Arc;
+
+use ros_z::{
+    dynamic::{FieldSchema, FieldType, MessageSchema},
+    entity::TypeHash,
+    MessageTypeInfo,
+};
 
 #[test]
 fn test_type_hash_zero() {
@@ -35,6 +41,19 @@ impl MessageTypeInfo for MockMessage {
             "RIHS01_1111111111111111111111111111111111111111111111111111111111111111",
         )
         .unwrap()
+    }
+
+    fn message_schema() -> Arc<MessageSchema> {
+        Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
+            package: "mock".to_string(),
+            name: "StaticMessage".to_string(),
+            fields: vec![
+                FieldSchema::new("name", FieldType::String),
+                FieldSchema::new("hash", FieldType::String),
+            ],
+            type_hash: None,
+        })
     }
 
     // Override dynamic methods to return instance-specific values
@@ -123,13 +142,26 @@ fn test_default_dynamic_delegates_to_static() {
             )
             .unwrap()
         }
+
+        fn message_schema() -> Arc<MessageSchema> {
+            Arc::new(MessageSchema {
+                type_name: Self::type_name().to_string(),
+                package: "simple".to_string(),
+                name: "Message".to_string(),
+                fields: Vec::new(),
+                type_hash: None,
+            })
+        }
     }
 
     let msg = SimpleMessage;
 
     // Dynamic methods delegate to static by default
     assert_eq!(msg.type_name_dyn(), "simple/msg/Message");
-    assert!(SimpleMessage::message_schema().is_none());
+    assert_eq!(
+        SimpleMessage::message_schema().type_name,
+        "simple/msg/Message"
+    );
 
     assert_eq!(
         msg.type_hash_dyn().to_rihs_string(),

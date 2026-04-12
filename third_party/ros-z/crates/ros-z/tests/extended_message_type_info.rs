@@ -1,14 +1,14 @@
 use std::time::Duration;
 
 use ros_z::{
-    Builder, ExtendedMessageTypeInfo, MessageTypeInfo,
+    Builder, MessageTypeInfo,
     context::ZContextBuilder,
     dynamic::{DynamicValue, EnumPayloadValue},
 };
 use serde::{Deserialize, Serialize};
 use zenoh::{Wait, config::WhatAmI};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/TelemetryLite")]
 struct TelemetryLite {
     label: String,
@@ -19,7 +19,7 @@ impl ros_z::msg::ZMessage for TelemetryLite {
     type Serdes = ros_z::msg::SerdeCdrSerdes<Self>;
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/RobotState")]
 enum RobotState {
     Idle,
@@ -31,7 +31,7 @@ impl ros_z::msg::ZMessage for RobotState {
     type Serdes = ros_z::msg::SerdeCdrSerdes<Self>;
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/RobotEnvelope")]
 struct RobotEnvelope {
     label: String,
@@ -39,14 +39,14 @@ struct RobotEnvelope {
     state: RobotState,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/GenericEnvelope")]
 struct GenericEnvelope<T> {
     payload: T,
     items: Vec<T>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/GenericOptionalEnvelope")]
 struct GenericOptionalEnvelope<T> {
     payload: Option<T>,
@@ -105,28 +105,18 @@ fn create_context_with_router(router: &TestRouter) -> ros_z::Result<ros_z::conte
 
 #[test]
 fn extended_derive_keeps_standard_schema_for_compatible_structs() {
-    let schema = TelemetryLite::message_schema().expect("standard-compatible schema");
+    let schema = TelemetryLite::message_schema();
     assert!(!schema.uses_extended_types());
     assert_eq!(schema.type_name, "custom_msgs/msg/TelemetryLite");
 
-    let extended = TelemetryLite::extended_message_schema();
-    assert_eq!(extended.type_name, schema.type_name);
-    assert!(!extended.uses_extended_types());
-
-    assert!(
-        RobotEnvelope::message_schema().is_none(),
-        "extended-only structs should not expose a standard schema"
-    );
-    assert!(
-        RobotState::message_schema().is_none(),
-        "extended enums should not expose a standard schema"
-    );
+    assert!(RobotEnvelope::message_schema().uses_extended_types());
+    assert!(RobotState::message_schema().uses_extended_types());
 }
 
 #[test]
 fn extended_derive_generates_distinct_generic_names_and_hashes() {
-    let u32_schema = GenericEnvelope::<u32>::message_schema().expect("u32 schema");
-    let msg_schema = GenericEnvelope::<TelemetryLite>::message_schema().expect("message schema");
+    let u32_schema = GenericEnvelope::<u32>::message_schema();
+    let msg_schema = GenericEnvelope::<TelemetryLite>::message_schema();
 
     assert_eq!(
         GenericEnvelope::<u32>::type_name(),
@@ -154,15 +144,11 @@ fn extended_derive_generates_distinct_generic_names_and_hashes() {
 
 #[test]
 fn extended_derive_keeps_extended_only_generic_instantiations_on_extended_path() {
-    let schema = GenericOptionalEnvelope::<u32>::extended_message_schema();
+    let schema = GenericOptionalEnvelope::<u32>::message_schema();
     assert!(schema.uses_extended_types());
     assert_eq!(
         GenericOptionalEnvelope::<u32>::type_name(),
         "custom_msgs/msg/GenericOptionalEnvelope__u32"
-    );
-    assert!(
-        GenericOptionalEnvelope::<u32>::message_schema().is_none(),
-        "optional generic instantiations should stay on the extended path"
     );
 
     let payload = schema.field("payload").expect("payload field");
@@ -175,7 +161,7 @@ fn extended_derive_keeps_extended_only_generic_instantiations_on_extended_path()
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn fallback_discovery_uses_standard_service_for_compatible_extended_types() {
+async fn discovery_uses_type_description_service_for_standard_compatible_types() {
     let router = TestRouter::new();
 
     let pub_ctx = create_context_with_router(&router).expect("publisher context");
@@ -222,7 +208,7 @@ async fn fallback_discovery_uses_standard_service_for_compatible_extended_types(
     let subscriber = sub_node
         .create_dyn_sub_auto("/extended_standard_topic", Duration::from_secs(10))
         .await
-        .expect("fallback dynamic subscriber")
+        .expect("dynamic subscriber")
         .build()
         .expect("subscriber build");
     let schema = subscriber.schema().expect("discovered schema");
@@ -242,7 +228,7 @@ async fn fallback_discovery_uses_standard_service_for_compatible_extended_types(
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn extended_only_types_require_explicit_extended_service_enablement() {
+async fn extended_only_types_require_type_description_service_enablement() {
     let router = TestRouter::new();
 
     let pub_ctx = create_context_with_router(&router).expect("publisher context");
@@ -283,20 +269,20 @@ async fn extended_only_types_require_explicit_extended_service_enablement() {
         .await;
     assert!(
         result.is_err(),
-        "extended discovery should fail when the publisher did not enable the extended service"
+        "extended discovery should fail when the publisher did not enable the type description service"
     );
 
     publish_task.await.expect("publisher task");
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn extended_only_types_use_extended_service_when_enabled() {
+async fn extended_only_types_use_type_description_service_when_enabled() {
     let router = TestRouter::new();
 
     let pub_ctx = create_context_with_router(&router).expect("publisher context");
     let pub_node = pub_ctx
         .create_node("extended_talker")
-        .with_extended_type_description_service()
+        .with_type_description_service()
         .build()
         .expect("publisher node");
 
@@ -305,16 +291,13 @@ async fn extended_only_types_use_extended_service_when_enabled() {
         .build()
         .expect("publisher");
 
-    assert!(
-        pub_node.type_description_service().is_none(),
-        "extended-only discovery should not require the standard type description service"
-    );
-    let extended_schema = pub_node
-        .extended_type_description_service()
-        .expect("extended type description service")
+    let registered = pub_node
+        .type_description_service()
+        .expect("type description service")
         .get_schema("custom_msgs/msg/RobotEnvelope")
         .expect("schema lookup");
-    assert!(extended_schema.is_some(), "extended schema should register");
+    let registered = registered.expect("extended schema should register");
+    assert_eq!(registered.type_hash, RobotEnvelope::type_hash().to_rihs_string());
 
     let sub_ctx = create_context_with_router(&router).expect("subscriber context");
     let sub_node = sub_ctx
@@ -341,7 +324,7 @@ async fn extended_only_types_use_extended_service_when_enabled() {
     let subscriber = sub_node
         .create_dyn_sub_auto("/extended_robot_topic", Duration::from_secs(10))
         .await
-        .expect("extended fallback subscriber")
+        .expect("dynamic subscriber")
         .build()
         .expect("subscriber build");
     let schema = subscriber.schema().expect("discovered schema");
@@ -383,14 +366,14 @@ async fn extended_only_types_use_extended_service_when_enabled() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn extended_discovery_works_across_namespaces() {
+async fn type_description_discovery_works_across_namespaces_for_extended_types() {
     let router = TestRouter::new();
 
     let pub_ctx = create_context_with_router(&router).expect("publisher context");
     let pub_node = pub_ctx
         .create_node("extended_talker")
         .with_namespace("tools")
-        .with_extended_type_description_service()
+        .with_type_description_service()
         .build()
         .expect("publisher node");
 
@@ -425,7 +408,7 @@ async fn extended_discovery_works_across_namespaces() {
     let subscriber = sub_node
         .create_dyn_sub_auto("/extended_robot_topic", Duration::from_secs(10))
         .await
-        .expect("extended fallback subscriber")
+        .expect("dynamic subscriber")
         .build()
         .expect("subscriber build");
     let schema = subscriber.schema().expect("discovered schema");
@@ -445,13 +428,13 @@ async fn extended_discovery_works_across_namespaces() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn top_level_enums_are_discoverable_through_the_extended_service() {
+async fn top_level_enums_are_discoverable_through_the_type_description_service() {
     let router = TestRouter::new();
 
     let pub_ctx = create_context_with_router(&router).expect("publisher context");
     let pub_node = pub_ctx
         .create_node("state_talker")
-        .with_extended_type_description_service()
+        .with_type_description_service()
         .build()
         .expect("publisher node");
 
@@ -480,7 +463,7 @@ async fn top_level_enums_are_discoverable_through_the_extended_service() {
     let subscriber = sub_node
         .create_dyn_sub_auto("/robot_state_topic", Duration::from_secs(10))
         .await
-        .expect("extended enum discovery")
+        .expect("enum discovery")
         .build()
         .expect("subscriber build");
     let schema = subscriber.schema().expect("discovered schema");

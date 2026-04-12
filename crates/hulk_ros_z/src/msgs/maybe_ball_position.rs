@@ -1,6 +1,6 @@
 use coordinate_systems::Ground;
 use linear_algebra::{Point2, Vector2};
-use ros_z::{ExtendedMessageTypeInfo, MessageTypeInfo, time::ZTime};
+use ros_z::{MessageTypeInfo, time::ZTime};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, MessageTypeInfo)]
@@ -11,7 +11,7 @@ pub struct ZBallPosition<Frame> {
     pub last_seen: ZTime,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "hulk_ros_z/msg/MaybeBallPosition")]
 pub struct MaybeBallPosition {
     pub position: Option<ZBallPosition<Ground>>,

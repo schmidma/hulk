@@ -1,7 +1,9 @@
 use std::{thread, time::Duration};
 
 use ros_z::{
-    Builder, MessageTypeInfo, ServiceTypeInfo, context::ZContextBuilder, entity::TypeHash,
+    Builder, MessageTypeInfo, ServiceTypeInfo, context::ZContextBuilder,
+    dynamic::{FieldSchema, FieldType, MessageSchema},
+    entity::TypeHash,
     msg::ZService,
 };
 use serde::{Deserialize, Serialize};
@@ -22,6 +24,19 @@ impl MessageTypeInfo for AddTwoIntsRequest {
     fn type_hash() -> TypeHash {
         TypeHash::zero()
     }
+
+    fn message_schema() -> std::sync::Arc<MessageSchema> {
+        std::sync::Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
+            package: "test_msgs".to_string(),
+            name: "AddTwoInts_Request".to_string(),
+            fields: vec![
+                FieldSchema::new("a", FieldType::Int64),
+                FieldSchema::new("b", FieldType::Int64),
+            ],
+            type_hash: None,
+        })
+    }
 }
 
 impl ros_z::msg::ZMessage for AddTwoIntsRequest {
@@ -41,6 +56,16 @@ impl MessageTypeInfo for AddTwoIntsResponse {
 
     fn type_hash() -> TypeHash {
         TypeHash::zero()
+    }
+
+    fn message_schema() -> std::sync::Arc<MessageSchema> {
+        std::sync::Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
+            package: "test_msgs".to_string(),
+            name: "AddTwoInts_Response".to_string(),
+            fields: vec![FieldSchema::new("sum", FieldType::Int64)],
+            type_hash: None,
+        })
     }
 }
 

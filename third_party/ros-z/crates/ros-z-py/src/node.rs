@@ -1,4 +1,4 @@
-use crate::action::{PyZActionClient, PyZActionServer, get_tokio_rt};
+use crate::action::{get_tokio_rt, PyZActionClient, PyZActionServer};
 use crate::error::IntoPyErr;
 use crate::graph::GraphQueries;
 use crate::pubsub::{PyZPublisher, PyZSubscriber};
@@ -10,10 +10,10 @@ use crate::traits::{
 };
 use crate::utils::python_type_to_rust_type;
 use pyo3::prelude::*;
-use ros_z::Builder;
 use ros_z::context::ZContext;
 use ros_z::entity::{TypeHash, TypeInfo};
 use ros_z::node::ZNode;
+use ros_z::Builder;
 use std::any::Any;
 use std::sync::Arc;
 
@@ -197,7 +197,7 @@ impl PyZNode {
 
         let pub_builder = self
             .inner
-            .create_pub_impl::<RawBytesMessage>(&topic, Some(type_info))
+            .create_pub_with_type_info::<RawBytesMessage>(&topic, Some(type_info))
             .with_serdes::<RawBytesCdrSerdes>()
             .with_qos(qos_profile);
         let zpub = pub_builder.build().map_err(|e| e.into_pyerr())?;
@@ -222,7 +222,7 @@ impl PyZNode {
 
         let sub_builder = self
             .inner
-            .create_sub_impl::<RawBytesMessage>(&topic, Some(type_info))
+            .create_sub_with_type_info::<RawBytesMessage>(&topic, Some(type_info))
             .with_serdes::<RawBytesCdrSerdes>()
             .with_qos(qos_profile);
 

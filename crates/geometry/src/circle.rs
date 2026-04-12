@@ -1,5 +1,6 @@
 use approx::{AbsDiffEq, RelativeEq};
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 use linear_algebra::{Orientation2, Point2, distance, vector};
@@ -20,7 +21,9 @@ use crate::{
     PathIntrospect,
     PathSerialize,
     Serialize,
+    MessageTypeInfo,
 )]
+#[ros_msg(type_name = "geometry/msg/Circle")]
 pub struct Circle<Frame> {
     pub center: Point2<Frame>,
     pub radius: f32,

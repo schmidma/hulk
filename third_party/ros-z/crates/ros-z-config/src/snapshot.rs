@@ -11,7 +11,10 @@ use crate::{ConfigKey, LayerPath, ProvenanceMap};
 /// This value is recorded on the node's active [`ros_z::time::ZClock`]
 /// timeline. When the node uses a logical clock, `sec`/`nanosec` represent a
 /// logical instant rather than host wallclock time.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default, ros_z::MessageTypeInfo,
+)]
+#[ros_msg(type_name = "ros_z_config/msg/ConfigTimestamp")]
 pub struct ConfigTimestamp {
     pub sec: i64,
     pub nanosec: u32,

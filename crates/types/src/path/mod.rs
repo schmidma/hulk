@@ -1,6 +1,7 @@
 pub mod traits;
 
 use approx::{AbsDiffEq, RelativeEq};
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 use coordinate_systems::Ground;
@@ -9,16 +10,34 @@ use linear_algebra::Point2;
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
 
 #[derive(
-    Clone, Debug, Serialize, Deserialize, PartialEq, PathSerialize, PathDeserialize, PathIntrospect,
+    Clone,
+    Debug,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    PathSerialize,
+    PathDeserialize,
+    PathIntrospect,
+    MessageTypeInfo,
 )]
+#[ros_msg(type_name = "types/msg/PathSegment")]
 pub enum PathSegment {
     LineSegment(LineSegment<Ground>),
     Arc(Arc<Ground>),
 }
 
 #[derive(
-    Clone, Debug, Serialize, Deserialize, PartialEq, PathSerialize, PathDeserialize, PathIntrospect,
+    Clone,
+    Debug,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    PathSerialize,
+    PathDeserialize,
+    PathIntrospect,
+    MessageTypeInfo,
 )]
+#[ros_msg(type_name = "types/msg/Path")]
 pub struct Path {
     pub segments: Vec<PathSegment>,
 }

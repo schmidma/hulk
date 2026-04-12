@@ -366,7 +366,7 @@ impl<'a, A: ZAction> Builder for ZActionServerBuilder<'a, A> {
         );
         let mut feedback_pub_builder = self
             .node
-            .create_pub_impl::<FeedbackMessage<A>>(&feedback_topic_name, feedback_type_info);
+            .create_pub_with_type_info::<FeedbackMessage<A>>(&feedback_topic_name, feedback_type_info);
         if let Some(qos) = self.feedback_topic_qos {
             feedback_pub_builder.entity.qos = qos.to_protocol_qos();
         }
@@ -378,7 +378,7 @@ impl<'a, A: ZAction> Builder for ZActionServerBuilder<'a, A> {
         let status_type_info = Some(A::status_type_info());
         let mut status_pub_builder = self
             .node
-            .create_pub_impl::<StatusMessage>(&status_topic_name, status_type_info);
+            .create_pub_with_type_info::<StatusMessage>(&status_topic_name, status_type_info);
         if let Some(qos) = self.status_topic_qos {
             status_pub_builder.entity.qos = qos.to_protocol_qos();
         }

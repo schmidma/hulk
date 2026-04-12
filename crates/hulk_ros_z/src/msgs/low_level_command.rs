@@ -1,9 +1,9 @@
-use ros_z::ExtendedMessageTypeInfo;
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 use crate::msgs::motion_intent::DemoMode;
 
-#[derive(Debug, Clone, Serialize, Deserialize, ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "hulk_ros_z/msg/LowLevelCommand")]
 pub struct LowLevelCommand {
     pub timestamp_ns: u64,

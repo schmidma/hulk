@@ -20,7 +20,9 @@ use crate::{fall_state::FallingDirection, path::Path, support_foot::Side};
     PathDeserialize,
     PathIntrospect,
     PartialEq,
+    MessageTypeInfo,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/OrientationMode")]
 pub enum OrientationMode {
     Unspecified,
     AlignWithPath,
@@ -44,7 +46,9 @@ pub enum OrientationMode {
     PathDeserialize,
     PathIntrospect,
     PartialEq,
+    MessageTypeInfo,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/MotionCommand")]
 pub enum MotionCommand {
     ArmsUpSquat,
     ArmsUpStand {
@@ -106,21 +110,13 @@ pub enum MotionCommand {
     },
 }
 
-impl MessageTypeInfo for MotionCommand {
-    fn type_name() -> &'static str {
-        "hulk_ros_z/msg/MotionCommand"
-    }
-
-    fn type_hash() -> ros_z::TypeHash {
-        ros_z::TypeHash::zero()
-    }
-}
-
 impl ZMessage for MotionCommand {
     type Serdes = SerdeCdrSerdes<Self>;
 }
 
 impl MotionCommand {
+    pub const TYPE_NAME: &str = "hulk_ros_z/msg/MotionCommand";
+
     pub fn head_motion(&self) -> Option<HeadMotion> {
         match self {
             MotionCommand::ArmsUpStand { head }
@@ -173,10 +169,12 @@ impl MotionCommand {
     Deserialize,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/HeadMotion")]
 pub enum HeadMotion {
     ZeroAngles,
     Center {
@@ -208,10 +206,12 @@ pub enum HeadMotion {
     Deserialize,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/ImageRegion")]
 pub enum ImageRegion {
     Bottom,
     #[default]
@@ -227,10 +227,12 @@ pub enum ImageRegion {
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/ArmMotion")]
 pub enum ArmMotion {
     Swing,
     PullTight,
@@ -244,10 +246,12 @@ pub enum ArmMotion {
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/KickDirection")]
 pub enum KickDirection {
     Back,
     Front,
@@ -263,10 +267,12 @@ pub enum KickDirection {
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/KickVariant")]
 pub enum KickVariant {
     Forward,
     Turn,
@@ -281,10 +287,12 @@ pub enum KickVariant {
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/JumpDirection")]
 pub enum JumpDirection {
     Left,
     Right,
@@ -300,10 +308,12 @@ pub enum JumpDirection {
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/GlanceDirection")]
 pub enum GlanceDirection {
     #[default]
     LeftOfTarget,
@@ -319,10 +329,12 @@ pub enum GlanceDirection {
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/KickPower")]
 pub enum KickPower {
     #[default]
     Rumpelstilzchen,

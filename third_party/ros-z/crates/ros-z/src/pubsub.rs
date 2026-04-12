@@ -267,7 +267,7 @@ impl<T, S> ZPubBuilder<T, S> {
     ///
     /// ```ignore
     /// let publisher = node
-    ///     .create_pub_impl::<DynamicMessage>("topic", None)
+    ///     .create_pub_with_type_info::<DynamicMessage>("topic", None)
     ///     .with_serdes::<DynamicSerdeCdrSerdes>()
     ///     .with_dyn_schema(schema)
     ///     .build()?;

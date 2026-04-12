@@ -5,6 +5,7 @@ use std::{
 };
 
 use approx::{AbsDiffEq, RelativeEq};
+use ros_z::{FieldTypeInfo, dynamic::FieldType, format_generic_message_type_name};
 use serde::{Deserialize, Serialize};
 
 use linear_algebra::{
@@ -31,6 +32,19 @@ use crate::{
     PathDeserialize,
 )]
 pub struct LineSegment<Frame>(pub Point2<Frame>, pub Point2<Frame>);
+
+impl<Frame> FieldTypeInfo for LineSegment<Frame>
+where
+    Frame: FieldTypeInfo,
+{
+    fn field_type() -> FieldType {
+        FieldType::Array(Box::new(<Point2<Frame> as FieldTypeInfo>::field_type()), 2)
+    }
+
+    fn generic_arg_name() -> String {
+        format_generic_message_type_name("geometry/msg/LineSegment", &[Frame::generic_arg_name()])
+    }
+}
 
 impl<Frame> LineSegment<Frame> {
     pub fn new(start: Point2<Frame>, end: Point2<Frame>) -> Self {

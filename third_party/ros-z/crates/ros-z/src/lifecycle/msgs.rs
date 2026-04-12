@@ -34,10 +34,11 @@
 use ros_z_cdr::{CdrBuffer, CdrDeserialize, CdrReader, CdrSerialize, CdrSerializedSize, CdrWriter};
 
 use crate::{
-    ServiceTypeInfo,
+    dynamic::{FieldSchema, FieldType, MessageSchema},
     entity::{TypeHash, TypeInfo},
     msg::ZService,
     ros_msg::MessageTypeInfo,
+    ServiceTypeInfo,
 };
 
 // ---------------------------------------------------------------------------
@@ -61,6 +62,19 @@ impl MessageTypeInfo for LcState {
             "RIHS01_dd2d02b82f3ebc858e53c431b1e6e91f3ffc71436fc81d0715214ac6ee2107a0",
         )
         .expect("invalid hash")
+    }
+
+    fn message_schema() -> std::sync::Arc<MessageSchema> {
+        std::sync::Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
+            package: "lifecycle_msgs".to_string(),
+            name: "State".to_string(),
+            fields: vec![
+                FieldSchema::new("id", FieldType::Uint8),
+                FieldSchema::new("label", FieldType::String),
+            ],
+            type_hash: None,
+        })
     }
 }
 
@@ -104,6 +118,19 @@ impl MessageTypeInfo for LcTransition {
             "RIHS01_c65d7b31ea134cba4f54fc867b817979be799f7452035cd35fac9b7421fb3424",
         )
         .expect("invalid hash")
+    }
+
+    fn message_schema() -> std::sync::Arc<MessageSchema> {
+        std::sync::Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
+            package: "lifecycle_msgs".to_string(),
+            name: "Transition".to_string(),
+            fields: vec![
+                FieldSchema::new("id", FieldType::Uint8),
+                FieldSchema::new("label", FieldType::String),
+            ],
+            type_hash: None,
+        })
     }
 }
 
@@ -213,6 +240,35 @@ impl MessageTypeInfo for LcTransitionEvent {
             "RIHS01_3c2d8cb6f93f99d5d2c37e6f3a50e8e3de5c67e3c2ff0834e2f8e42d0b11a6f3",
         )
         .expect("invalid hash")
+    }
+
+    fn message_schema() -> std::sync::Arc<MessageSchema> {
+        let time_schema = std::sync::Arc::new(MessageSchema {
+            type_name: "builtin_interfaces/msg/Time".to_string(),
+            package: "builtin_interfaces".to_string(),
+            name: "Time".to_string(),
+            fields: vec![
+                FieldSchema::new("sec", FieldType::Int32),
+                FieldSchema::new("nanosec", FieldType::Uint32),
+            ],
+            type_hash: None,
+        });
+
+        std::sync::Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
+            package: "lifecycle_msgs".to_string(),
+            name: "TransitionEvent".to_string(),
+            fields: vec![
+                FieldSchema::new("timestamp", FieldType::Message(time_schema)),
+                FieldSchema::new(
+                    "transition",
+                    FieldType::Message(LcTransition::message_schema()),
+                ),
+                FieldSchema::new("start_state", FieldType::Message(LcState::message_schema())),
+                FieldSchema::new("goal_state", FieldType::Message(LcState::message_schema())),
+            ],
+            type_hash: None,
+        })
     }
 }
 

@@ -21,10 +21,10 @@ flowchart TD
 
 ## Rust-Native Messages
 
-**Define messages directly in Rust and derive their schema metadata.** This approach is fast for prototyping, and plain named structs can still participate in the standard ROS 2 type description service.
+**Define messages directly in Rust and derive their schema metadata.** This approach is fast for prototyping, and one derive now covers both standard-compatible and ros-z-specific schema shapes.
 
-```admonish warning
-Rust-native messages defined with `#[derive(MessageTypeInfo)]` are limited to ROS 2 schema-compatible shapes. If you need `Option<T>`, enums, or other ros-z-only schema extensions, use `#[derive(ExtendedMessageTypeInfo)]` plus the parallel extended type description service instead of the standard ROS 2 type description service.
+```admonish tip
+`#[derive(MessageTypeInfo)]` supports structs, enums, `Option<T>`, and nested field types that implement `FieldTypeInfo`. ros-z publishes the resulting schema through `~get_type_description` as canonical schema JSON.
 ```
 
 ### Workflow of Rust-Native Messages
@@ -65,15 +65,13 @@ impl ros_z::msg::ZMessage for RobotStatus {
 }
 ```
 
-`MessageTypeInfo` derive in core `ros-z` intentionally supports only ROS 2 schema-compatible named
-structs: primitive numeric/bool types, `String`, `Vec<T>`, fixed arrays `[T; N]`, and nested
-message types. Tuple structs, unit structs, enums, `Option<T>`, maps, `usize`, `isize`, and other
-Rust-only shapes are rejected at compile time.
+`MessageTypeInfo` derive in core `ros-z` supports named structs, enums, `Option<T>`, sequences,
+fixed arrays, and nested field types that implement `FieldTypeInfo`. Tuple structs, unit structs,
+maps, `usize`, `isize`, and other unsupported Rust-only shapes are still rejected at compile time.
 
-For richer serde shapes such as `Option<T>` or enums, use `ros_z::ExtendedMessageTypeInfo`.
-It keeps normal `message_schema()` support for types that are still ROS 2 compatible, and uses a
-separate `~get_extended_type_description` service for extended-only schemas when the publisher node
-is created with `.with_extended_type_description_service()`.
+When a publisher node enables `.with_type_description_service()`, derived message types
+automatically register their runtime schema so dynamic subscribers can discover them through the
+single schema service.
 
 ### Service Example
 

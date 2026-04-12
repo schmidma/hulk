@@ -39,10 +39,7 @@ pub use crate::qos::{
 pub use crate::action::ZAction;
 
 /// Trait bounds for custom messages and services.
-pub use crate::{
-    ExtendedMessageTypeInfo,
-    ros_msg::{ActionTypeInfo, MessageTypeInfo, ServiceTypeInfo},
-};
+pub use crate::ros_msg::{ActionTypeInfo, MessageTypeInfo, ServiceTypeInfo};
 
 /// Type identity helpers for custom message definitions.
 pub use crate::entity::{TypeHash, TypeInfo};

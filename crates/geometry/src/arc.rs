@@ -1,4 +1,5 @@
 use approx::{AbsDiffEq, RelativeEq};
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 use linear_algebra::Orientation2;
@@ -19,7 +20,9 @@ use crate::{
     PathIntrospect,
     PathSerialize,
     Serialize,
+    MessageTypeInfo,
 )]
+#[ros_msg(type_name = "geometry/msg/Arc")]
 pub struct Arc<Frame> {
     pub circle: Circle<Frame>,
     pub start: Orientation2<Frame>,

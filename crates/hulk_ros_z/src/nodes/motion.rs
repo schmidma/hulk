@@ -22,7 +22,6 @@ pub async fn run(ctx: Arc<ZContext>) -> Result<()> {
     let node = ctx
         .create_node("motion")
         .with_type_description_service()
-        .with_extended_type_description_service()
         .build()
         .into_eyre()?;
     let config = node

@@ -952,20 +952,18 @@ fn generate_message_type_info(
                     .expect("Invalid RIHS hash")
             }
 
-            fn message_schema() -> Option<::std::sync::Arc<::ros_z::dynamic::MessageSchema>> {
+            fn message_schema() -> ::std::sync::Arc<::ros_z::dynamic::MessageSchema> {
                 static SCHEMA: ::std::sync::OnceLock<::std::sync::Arc<::ros_z::dynamic::MessageSchema>> =
                     ::std::sync::OnceLock::new();
 
-                Some(
-                    SCHEMA
-                        .get_or_init(|| {
-                            ::ros_z::dynamic::MessageSchema::builder(#schema_type_name)
-                                #(#schema_field_tokens)*
-                                .build()
-                                .expect("generated message schema must be valid")
-                        })
-                        .clone(),
-                )
+                SCHEMA
+                    .get_or_init(|| {
+                        ::ros_z::dynamic::MessageSchema::builder(#schema_type_name)
+                            #(#schema_field_tokens)*
+                            .build()
+                            .expect("generated message schema must be valid")
+                    })
+                    .clone()
             }
         }
     }

@@ -297,18 +297,16 @@ impl CdrSerializedSize for GetTypeDescriptionRequest {
 pub struct GetTypeDescriptionResponse {
     pub successful: bool,
     pub failure_reason: String,
-    pub type_description: WireTypeDescription,
-    pub type_sources: Vec<WireTypeSource>,
-    pub extra_information: Vec<WireKeyValue>,
+    pub type_hash: String,
+    pub schema_json: String,
 }
 
 impl CdrSerialize for GetTypeDescriptionResponse {
     fn cdr_serialize<BO: byteorder::ByteOrder, B: CdrBuffer>(&self, w: &mut CdrWriter<'_, BO, B>) {
         self.successful.cdr_serialize(w);
         self.failure_reason.cdr_serialize(w);
-        self.type_description.cdr_serialize(w);
-        self.type_sources.cdr_serialize(w);
-        self.extra_information.cdr_serialize(w);
+        self.type_hash.cdr_serialize(w);
+        self.schema_json.cdr_serialize(w);
     }
 }
 impl CdrDeserialize for GetTypeDescriptionResponse {
@@ -318,9 +316,8 @@ impl CdrDeserialize for GetTypeDescriptionResponse {
         Ok(GetTypeDescriptionResponse {
             successful: bool::cdr_deserialize(r)?,
             failure_reason: String::cdr_deserialize(r)?,
-            type_description: WireTypeDescription::cdr_deserialize(r)?,
-            type_sources: Vec::<WireTypeSource>::cdr_deserialize(r)?,
-            extra_information: Vec::<WireKeyValue>::cdr_deserialize(r)?,
+            type_hash: String::cdr_deserialize(r)?,
+            schema_json: String::cdr_deserialize(r)?,
         })
     }
 }
@@ -328,9 +325,8 @@ impl CdrSerializedSize for GetTypeDescriptionResponse {
     fn cdr_serialized_size(&self, pos: usize) -> usize {
         let p = self.successful.cdr_serialized_size(pos);
         let p = self.failure_reason.cdr_serialized_size(p);
-        let p = self.type_description.cdr_serialized_size(p);
-        let p = self.type_sources.cdr_serialized_size(p);
-        self.extra_information.cdr_serialized_size(p)
+        let p = self.type_hash.cdr_serialized_size(p);
+        self.schema_json.cdr_serialized_size(p)
     }
 }
 
@@ -380,14 +376,13 @@ pub struct TypeSource {
 }
 
 impl RegisteredSchema {
-    /// Create a new registered schema, computing the type hash.
-    pub fn new(schema: Arc<MessageSchema>) -> std::result::Result<Self, DynamicError> {
-        let type_hash = schema.compute_type_hash()?.to_rihs_string();
-        Ok(Self {
+    /// Create a new registered schema.
+    pub fn new(schema: Arc<MessageSchema>, type_hash: String) -> Self {
+        Self {
             schema,
             type_hash,
             source: None,
-        })
+        }
     }
 
     /// Create a registered schema with source.
@@ -396,7 +391,11 @@ impl RegisteredSchema {
         encoding: &str,
         raw_content: &str,
     ) -> std::result::Result<Self, DynamicError> {
-        let type_hash = schema.compute_type_hash()?.to_rihs_string();
+        let type_hash = if schema.uses_extended_types() {
+            crate::schema_json::compute_schema_type_hash(&schema)?.to_rihs_string()
+        } else {
+            schema.compute_type_hash()?.to_rihs_string()
+        };
         Ok(Self {
             schema,
             type_hash,
@@ -508,8 +507,9 @@ impl TypeDescriptionService {
     pub fn register_schema(
         &self,
         schema: Arc<MessageSchema>,
+        type_hash: String,
     ) -> std::result::Result<(), DynamicError> {
-        let registered = RegisteredSchema::new(schema.clone())?;
+        let registered = RegisteredSchema::new(schema.clone(), type_hash);
         let type_name = schema.type_name.clone();
 
         let mut schemas = self
@@ -626,7 +626,7 @@ impl TypeDescriptionService {
 
         info!(
             "[TDS] Sending response: successful={}, type={}",
-            response.successful, response.type_description.type_description.type_name
+            response.successful, request.type_name
         );
 
         // Serialize and send the response
@@ -655,9 +655,8 @@ impl TypeDescriptionService {
                 return GetTypeDescriptionResponse {
                     successful: false,
                     failure_reason: "Internal error: registry lock poisoned".to_string(),
-                    type_description: Default::default(),
-                    type_sources: vec![],
-                    extra_information: vec![],
+                    type_hash: String::new(),
+                    schema_json: String::new(),
                 };
             }
         };
@@ -669,9 +668,8 @@ impl TypeDescriptionService {
                 return GetTypeDescriptionResponse {
                     successful: false,
                     failure_reason: format!("Type '{}' not registered", request.type_name),
-                    type_description: Default::default(),
-                    type_sources: vec![],
-                    extra_information: vec![],
+                    type_hash: String::new(),
+                    schema_json: String::new(),
                 };
             }
         };
@@ -688,48 +686,27 @@ impl TypeDescriptionService {
                     "Type hash mismatch: expected {}, got {}",
                     registered.type_hash, request.type_hash
                 ),
-                type_description: Default::default(),
-                type_sources: vec![],
-                extra_information: vec![],
+                type_hash: String::new(),
+                schema_json: String::new(),
             };
         }
 
-        // Convert schema to wire format
-        let type_description = match schema_to_wire_type_description(&registered.schema) {
-            Ok(td) => td,
+        match crate::schema_json::schema_to_json(&registered.schema) {
+            Ok(schema_json) => GetTypeDescriptionResponse {
+                successful: true,
+                failure_reason: String::new(),
+                type_hash: registered.type_hash.clone(),
+                schema_json,
+            },
             Err(e) => {
-                warn!("[TDS] Failed to convert schema: {}", e);
-                return GetTypeDescriptionResponse {
+                warn!("[TDS] Failed to serialize schema: {}", e);
+                GetTypeDescriptionResponse {
                     successful: false,
-                    failure_reason: format!("Failed to convert schema: {}", e),
-                    type_description: Default::default(),
-                    type_sources: vec![],
-                    extra_information: vec![],
-                };
+                    failure_reason: format!("Failed to serialize schema: {}", e),
+                    type_hash: String::new(),
+                    schema_json: String::new(),
+                }
             }
-        };
-
-        // Include type sources if requested
-        let type_sources = if request.include_type_sources {
-            collect_type_sources(registered, &schemas_guard)
-        } else {
-            vec![]
-        };
-
-        debug!(
-            "[TDS] Returning type description for: {}",
-            request.type_name
-        );
-
-        GetTypeDescriptionResponse {
-            successful: true,
-            failure_reason: String::new(),
-            type_description,
-            type_sources,
-            extra_information: vec![WireKeyValue {
-                key: "ros_z_version".to_string(),
-                value: env!("CARGO_PKG_VERSION").to_string(),
-            }],
         }
     }
 }
@@ -770,40 +747,6 @@ fn field_to_wire(fd: &ros_z_schema::FieldDescription) -> WireField {
         },
         default_value: fd.default_value.clone(),
     }
-}
-
-/// Collect type sources for the schema and its referenced types.
-fn collect_type_sources(
-    registered: &RegisteredSchema,
-    all_schemas: &HashMap<String, RegisteredSchema>,
-) -> Vec<WireTypeSource> {
-    let mut sources = Vec::new();
-
-    // Add source for the main type
-    if let Some(source) = &registered.source {
-        sources.push(WireTypeSource {
-            type_name: registered.schema.type_name.clone(),
-            encoding: source.encoding.clone(),
-            raw_file_contents: source.raw_content.clone(),
-        });
-    }
-
-    // Add sources for referenced types (if they're registered and have sources)
-    if let Ok(type_desc_msg) = registered.schema.to_type_description_msg() {
-        for ref_td in &type_desc_msg.referenced_type_descriptions {
-            if let Some(ref_registered) = all_schemas.get(&ref_td.type_name)
-                && let Some(ref_source) = &ref_registered.source
-            {
-                sources.push(WireTypeSource {
-                    type_name: ref_td.type_name.clone(),
-                    encoding: ref_source.encoding.clone(),
-                    raw_file_contents: ref_source.raw_content.clone(),
-                });
-            }
-        }
-    }
-
-    sources
 }
 
 /// Convert from wire format TypeDescription to ros-z-schema TypeDescriptionMsg.
@@ -859,7 +802,7 @@ mod tests {
             .build()
             .unwrap();
 
-        let registered = RegisteredSchema::new(schema).unwrap();
+        let registered = RegisteredSchema::new(schema, "RIHS01_test".to_string());
         assert!(registered.type_hash.starts_with("RIHS01_"));
         assert!(registered.source.is_none());
     }
@@ -877,6 +820,23 @@ mod tests {
         let source = registered.source.as_ref().unwrap();
         assert_eq!(source.encoding, "msg");
         assert_eq!(source.raw_content, "string data");
+    }
+
+    #[test]
+    fn test_registered_schema_with_source_uses_canonical_hash_for_extended_schema() {
+        let schema = MessageSchema::builder("custom_msgs/msg/RobotEnvelope")
+            .field("mission_id", FieldType::Optional(Box::new(FieldType::Uint32)))
+            .build()
+            .unwrap();
+        let expected = crate::schema_json::compute_schema_type_hash(&schema)
+            .unwrap()
+            .to_rihs_string();
+
+        let registered =
+            RegisteredSchema::with_source(schema, "msg", "optional<uint32> mission_id").unwrap();
+
+        assert_eq!(registered.type_hash, expected);
+        assert!(registered.source.is_some());
     }
 
     #[test]

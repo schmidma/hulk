@@ -1,13 +1,13 @@
 use std::{
     collections::HashMap,
-    sync::{Arc, atomic::AtomicUsize},
+    sync::{atomic::AtomicUsize, Arc},
 };
 
 use tracing::{debug, warn};
 use zenoh::{Result, Session, Wait};
 
 use crate::{
-    Builder, entity::normalize_node_namespace, graph::Graph, node::ZNodeBuilder, time::ZClock,
+    entity::normalize_node_namespace, graph::Graph, node::ZNodeBuilder, time::ZClock, Builder,
 };
 
 #[derive(Debug, Default)]
@@ -650,7 +650,6 @@ impl ZContext {
             clock: self.clock.clone(),
             runtime_config_inputs: self.runtime_config_inputs.clone(),
             enable_type_desc_service: false,
-            enable_extended_type_desc_service: false,
             enable_parameters: false,
             parameter_overrides: std::collections::HashMap::new(),
         }

@@ -4,6 +4,8 @@ use ros_z::{
     Builder, TypeHash, ZBuf,
     attachment::Attachment,
     context::ZContextBuilder,
+    dynamic::{FieldSchema, FieldType, MessageSchema},
+    entity::TypeInfo,
     ros_msg::MessageTypeInfo,
     time::{Duration, ZClock, ZTime},
 };
@@ -25,6 +27,19 @@ impl MessageTypeInfo for TestMessage {
 
     fn type_hash() -> TypeHash {
         TypeHash::zero()
+    }
+
+    fn message_schema() -> std::sync::Arc<MessageSchema> {
+        std::sync::Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
+            package: "test_msgs".to_string(),
+            name: "TestMessage".to_string(),
+            fields: vec![
+                FieldSchema::new("data", FieldType::Sequence(Box::new(FieldType::Uint8))),
+                FieldSchema::new("counter", FieldType::Uint64),
+            ],
+            type_hash: None,
+        })
     }
 }
 
@@ -102,6 +117,38 @@ async fn test_multiple_messages() {
         let received_msg = received.unwrap();
         assert_eq!(received_msg.counter, i);
     }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+async fn test_create_pub_with_type_info_accepts_explicit_type_info_without_message_type_info() {
+    #[derive(Debug, Clone, Serialize, Deserialize)]
+    struct ZMessageOnlyMessage {
+        data: Vec<u8>,
+        counter: u64,
+    }
+
+    impl ros_z::msg::ZMessage for ZMessageOnlyMessage {
+        type Serdes = ros_z::msg::SerdeCdrSerdes<ZMessageOnlyMessage>;
+    }
+
+    let ctx = ZContextBuilder::default()
+        .build()
+        .expect("Failed to create context");
+    let node = ctx
+        .create_node("explicit_type_info_node")
+        .build()
+        .expect("Failed to create node");
+
+    let _publisher = node
+        .create_pub_with_type_info::<ZMessageOnlyMessage>(
+            "/explicit_type_info_topic",
+            Some(TypeInfo::new(
+                "test_msgs/msg/TestMessage",
+                Some(TypeHash::zero()),
+            )),
+        )
+        .build()
+        .unwrap();
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

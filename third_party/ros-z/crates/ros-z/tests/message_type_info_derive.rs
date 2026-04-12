@@ -38,6 +38,19 @@ struct NestedGenericTelemetry<T> {
     inner: GenericTelemetry<T>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
+#[ros_msg(type_name = "custom_msgs/msg/DriveMode")]
+enum DriveMode {
+    Idle,
+    Manual { speed_limit: u32 },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ros_z::MessageTypeInfo)]
+#[ros_msg(type_name = "custom_msgs/msg/OptionalTelemetry")]
+struct OptionalTelemetry {
+    mode: Option<DriveMode>,
+}
+
 impl ros_z::msg::ZMessage for RobotTelemetry {
     type Serdes = ros_z::msg::SerdeCdrSerdes<Self>;
 }
@@ -90,7 +103,7 @@ fn create_context_with_router(router: &TestRouter) -> ros_z::Result<ros_z::conte
 
 #[test]
 fn derive_generates_type_info_and_schema() {
-    let schema = RobotTelemetry::message_schema().expect("schema should be generated");
+    let schema = RobotTelemetry::message_schema();
 
     assert_eq!(
         RobotTelemetry::type_name(),
@@ -144,8 +157,8 @@ fn derive_generates_type_info_and_schema() {
 
 #[test]
 fn derive_generates_distinct_generic_type_info_per_instantiation() {
-    let u32_schema = GenericTelemetry::<u32>::message_schema().expect("u32 schema");
-    let string_schema = GenericTelemetry::<String>::message_schema().expect("string schema");
+    let u32_schema = GenericTelemetry::<u32>::message_schema();
+    let string_schema = GenericTelemetry::<String>::message_schema();
 
     assert_eq!(
         GenericTelemetry::<u32>::type_name(),
@@ -185,7 +198,7 @@ fn derive_generates_distinct_generic_type_info_per_instantiation() {
 
 #[test]
 fn derive_supports_nested_generic_message_fields() {
-    let schema = GenericTelemetry::<Position2D>::message_schema().expect("generic schema");
+    let schema = GenericTelemetry::<Position2D>::message_schema();
     assert_eq!(
         GenericTelemetry::<Position2D>::type_name(),
         "custom_msgs/msg/GenericTelemetry__custom_msgs_msg_position2d"
@@ -199,8 +212,7 @@ fn derive_supports_nested_generic_message_fields() {
         other => panic!("expected nested message field, got {:?}", other),
     }
 
-    let nested_schema =
-        NestedGenericTelemetry::<Position2D>::message_schema().expect("nested schema");
+    let nested_schema = NestedGenericTelemetry::<Position2D>::message_schema();
     let inner = nested_schema.field("inner").expect("inner field");
     match &inner.field_type {
         FieldType::Message(nested) => {
@@ -211,6 +223,42 @@ fn derive_supports_nested_generic_message_fields() {
         }
         other => panic!("expected nested generic message field, got {:?}", other),
     }
+}
+
+#[test]
+fn derive_supports_enums_with_full_schema() {
+    let schema = DriveMode::message_schema();
+
+    assert_eq!(DriveMode::type_name(), "custom_msgs/msg/DriveMode");
+    assert_eq!(schema.type_name, "custom_msgs/msg/DriveMode");
+    assert_eq!(schema.field_count(), 1);
+
+    let value = schema.field("value").expect("enum payload field");
+    match &value.field_type {
+        FieldType::Enum(enum_schema) => {
+            assert_eq!(enum_schema.type_name, "custom_msgs/msg/DriveMode");
+            assert_eq!(enum_schema.variants.len(), 2);
+        }
+        other => panic!("expected enum field, got {:?}", other),
+    }
+}
+
+#[test]
+fn derive_supports_option_fields_with_message_type_info() {
+    let schema = OptionalTelemetry::message_schema();
+
+    let mode = schema.field("mode").expect("optional field");
+    match &mode.field_type {
+        FieldType::Optional(inner) => match inner.as_ref() {
+            FieldType::Enum(enum_schema) => {
+                assert_eq!(enum_schema.type_name, "custom_msgs/msg/DriveMode");
+            }
+            other => panic!("expected optional enum field, got {:?}", other),
+        },
+        other => panic!("expected optional field, got {:?}", other),
+    }
+
+    assert_ne!(OptionalTelemetry::type_hash(), DriveMode::type_hash());
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

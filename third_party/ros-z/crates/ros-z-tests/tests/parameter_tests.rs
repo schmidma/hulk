@@ -391,7 +391,7 @@ fn test_parameter_events_cover_lifecycle() {
         .expect("observer");
 
     let events = observer
-        .create_sub_impl::<WireParameterEvent>(
+        .create_sub_with_type_info::<WireParameterEvent>(
             "/parameter_events",
             Some(parameter_event_type_info()),
         )

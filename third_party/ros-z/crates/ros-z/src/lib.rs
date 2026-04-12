@@ -57,10 +57,6 @@ pub mod encoding;
 pub mod entity;
 /// Graph events emitted by the Zenoh network graph.
 pub mod event;
-/// ros-z-specific extended schema discovery for enums, options, and other non-ROS shapes.
-pub mod extended_schema;
-pub(crate) mod extended_type_description_query;
-pub(crate) mod extended_type_description_service;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 /// ROS 2 graph introspection (node/topic/service discovery).
@@ -83,6 +79,8 @@ pub mod python_bridge;
 pub mod qos;
 /// Internal message queues.
 pub mod queue;
+/// Canonical JSON transport for runtime message schemas.
+pub mod schema_json;
 /// Message type metadata traits (`MessageTypeInfo`, etc.).
 pub mod ros_msg;
 /// ROS 2 service client and server.
@@ -108,12 +106,11 @@ pub mod parameter;
 
 pub use attachment::GidArray;
 pub use entity::{TypeHash, TypeInfo};
-pub use extended_schema::ExtendedMessageTypeInfo;
 pub use ros_msg::{
     ActionTypeInfo, FieldTypeInfo, MessageTypeInfo, ServiceTypeInfo, canonical_type_name_to_dds,
     dds_type_name_to_canonical, format_generic_message_type_name,
 };
-pub use ros_z_derive::{ExtendedMessageTypeInfo, MessageTypeInfo};
+pub use ros_z_derive::MessageTypeInfo;
 pub use zbuf::ZBuf;
 pub use zenoh::Result;
 

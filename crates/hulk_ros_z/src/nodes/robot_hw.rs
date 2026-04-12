@@ -39,7 +39,7 @@ const FALL_DOWN_ROSZ_TOPIC: &str = "robot_hw/fall_down";
 const BUTTON_EVENT_ROSZ_TOPIC: &str = "robot_hw/button_event";
 const REMOTE_CONTROLLER_STATE_ROSZ_TOPIC: &str = "robot_hw/remote_controller_state";
 
-#[derive(Serialize, Deserialize, ExtendedMessageTypeInfo)]
+#[derive(Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "hulk_ros_z/msg/LedCommand")]
 pub enum LedCommand {
     SetParam { r: u8, g: u8, b: u8 },
@@ -50,7 +50,7 @@ impl ros_z::msg::ZMessage for LedCommand {
     type Serdes = ros_z::msg::SerdeCdrSerdes<Self>;
 }
 
-#[derive(Serialize, Deserialize, ExtendedMessageTypeInfo)]
+#[derive(Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "hulk_ros_z/msg/HighLevelCommand")]
 pub enum HighLevelCommand {
     ChangeMode { mode: i32 },
@@ -71,13 +71,11 @@ impl ros_z::msg::ZMessage for HighLevelCommand {
 }
 
 pub async fn run(ctx: Arc<ZContext>) -> Result<()> {
-    let node = Arc::new(
-        ctx.create_node("robot_hw")
-            .with_type_description_service()
-            .with_extended_type_description_service()
-            .build()
-            .into_eyre()?,
-    );
+    let node = ctx
+        .create_node("robot_hw")
+        .with_type_description_service()
+        .build()
+        .into_eyre()?;
     // let _config = node
     //     .bind_config_with_metadata_as::<RobotHwConfig>("robot_hw")
     //     .into_eyre()?;

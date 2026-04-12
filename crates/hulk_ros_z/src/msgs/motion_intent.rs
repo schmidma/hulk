@@ -1,7 +1,7 @@
-use ros_z::ExtendedMessageTypeInfo;
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "hulk_ros_z/msg/DemoMode")]
 pub enum DemoMode {
     Idle,
@@ -9,7 +9,7 @@ pub enum DemoMode {
     Walk,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "hulk_ros_z/msg/MotionIntent")]
 pub struct MotionIntent {
     pub timestamp_ns: u64,

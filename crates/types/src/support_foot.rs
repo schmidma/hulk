@@ -1,4 +1,5 @@
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -10,10 +11,12 @@ use serde::{Deserialize, Serialize};
     Eq,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "types/msg/SupportSide")]
 pub enum Side {
     #[default]
     Left,

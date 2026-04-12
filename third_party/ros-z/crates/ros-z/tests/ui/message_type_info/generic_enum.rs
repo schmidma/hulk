@@ -1,7 +1,7 @@
-use ros_z::ExtendedMessageTypeInfo;
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, ExtendedMessageTypeInfo)]
+#[derive(Debug, Clone, Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "custom_msgs/msg/GenericEnum")]
 enum GenericEnum<T> {
     Value(T),

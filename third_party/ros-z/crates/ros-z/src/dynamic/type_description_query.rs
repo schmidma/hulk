@@ -9,10 +9,8 @@ use crate::{Builder, node::ZNode, topic_name::qualify_remote_private_service_nam
 
 #[cfg(test)]
 use super::discovery::collect_topic_schema_candidates_from_publishers;
-use super::type_description::type_description_msg_to_schema;
 use super::type_description_service::{
     GetTypeDescription, GetTypeDescriptionRequest, GetTypeDescriptionResponse,
-    wire_to_schema_type_description,
 };
 use super::{discovery::TopicSchemaCandidate, error::DynamicError, schema::MessageSchema};
 
@@ -65,7 +63,7 @@ pub(crate) async fn query_type_description(
 
     if response.successful {
         let schema = schema_from_type_description_response(&response)?;
-        Ok((schema, candidate.type_hash.clone()))
+        Ok((schema, response.type_hash.clone()))
     } else {
         warn!(
             "[TDC] Type description query failed: {}",
@@ -85,17 +83,14 @@ pub fn schema_from_type_description_response(
         )));
     }
 
-    let type_desc_msg = wire_to_schema_type_description(&response.type_description);
-    type_description_msg_to_schema(&type_desc_msg)
+    crate::schema_json::schema_from_json(&response.schema_json)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::dynamic::schema::FieldType;
-    use crate::dynamic::type_description_service::{
-        WireTypeDescription, schema_to_wire_type_description,
-    };
+    use crate::schema_json::schema_to_json;
     use crate::entity::{
         EndpointEntity, EndpointKind, Entity, NodeEntity, TYPE_HASH_NOT_SUPPORTED, TypeHash,
         TypeInfo,
@@ -130,14 +125,13 @@ mod tests {
             .build()
             .unwrap();
 
-        let wire_td = schema_to_wire_type_description(&original).unwrap();
+        let schema_json = schema_to_json(&original).unwrap();
 
         let response = GetTypeDescriptionResponse {
             successful: true,
             failure_reason: String::new(),
-            type_description: wire_td,
-            type_sources: vec![],
-            extra_information: vec![],
+            type_hash: String::new(),
+            schema_json,
         };
 
         let schema = schema_from_type_description_response(&response).unwrap();
@@ -151,9 +145,8 @@ mod tests {
         let response = GetTypeDescriptionResponse {
             successful: false,
             failure_reason: "Type not found".to_string(),
-            type_description: WireTypeDescription::default(),
-            type_sources: vec![],
-            extra_information: vec![],
+            type_hash: String::new(),
+            schema_json: String::new(),
         };
 
         let result = schema_from_type_description_response(&response);
@@ -175,14 +168,13 @@ mod tests {
             .build()
             .unwrap();
 
-        let wire_td = schema_to_wire_type_description(&twist).unwrap();
+        let schema_json = schema_to_json(&twist).unwrap();
 
         let response = GetTypeDescriptionResponse {
             successful: true,
             failure_reason: String::new(),
-            type_description: wire_td,
-            type_sources: vec![],
-            extra_information: vec![],
+            type_hash: String::new(),
+            schema_json,
         };
 
         let schema = schema_from_type_description_response(&response).unwrap();
@@ -194,6 +186,29 @@ mod tests {
             assert_eq!(nested.fields.len(), 3);
         } else {
             panic!("Expected Message type for linear field");
+        }
+    }
+
+    #[test]
+    fn test_response_to_schema_extended_shapes() {
+        let schema = MessageSchema::builder("custom_msgs/msg/RobotEnvelope")
+            .field("mission_id", FieldType::Optional(Box::new(FieldType::Uint32)))
+            .build()
+            .unwrap();
+
+        let response = GetTypeDescriptionResponse {
+            successful: true,
+            failure_reason: String::new(),
+            type_hash: String::new(),
+            schema_json: schema_to_json(&schema).unwrap(),
+        };
+
+        let parsed = schema_from_type_description_response(&response).unwrap();
+        match &parsed.field("mission_id").unwrap().field_type {
+            FieldType::Optional(inner) => {
+                assert!(matches!(inner.as_ref(), FieldType::Uint32));
+            }
+            other => panic!("expected optional field, got {other:?}"),
         }
     }
 

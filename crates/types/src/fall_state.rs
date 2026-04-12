@@ -1,6 +1,7 @@
 use std::time::SystemTime;
 
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -10,10 +11,12 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "types/msg/FallSide")]
 pub enum Side {
     Left,
     Right,
@@ -26,10 +29,12 @@ pub enum Side {
     Deserialize,
     PartialEq,
     Serialize,
+    MessageTypeInfo,
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
 )]
+#[ros_msg(type_name = "types/msg/FallingDirection")]
 pub enum FallingDirection {
     Forward { side: Side },
     Backward { side: Side },

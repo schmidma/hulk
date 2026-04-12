@@ -118,18 +118,7 @@ impl<'a> SchemaDiscovery<'a> {
         let candidates =
             collect_topic_schema_candidates(self.node.graph().as_ref(), &qualified_topic)?;
 
-        let (schema, type_hash) = match self.try_standard(&candidates[..]).await {
-            Ok(result) => result,
-            Err(standard_error) => match self.try_extended(&candidates[..]).await {
-                Ok(result) => result,
-                Err(extended_error) => {
-                    return Err(DynamicError::SchemaNotFound(format!(
-                        "Schema discovery failed. Standard: {}. Extended: {}",
-                        standard_error, extended_error
-                    )));
-                }
-            },
-        };
+        let (schema, type_hash) = self.try_type_description(&candidates[..]).await?;
 
         Ok(DiscoveredTopicSchema {
             qualified_topic,
@@ -138,7 +127,7 @@ impl<'a> SchemaDiscovery<'a> {
         })
     }
 
-    async fn try_standard(
+    async fn try_type_description(
         &self,
         candidates: &[TopicSchemaCandidate],
     ) -> Result<(Arc<MessageSchema>, String), DynamicError> {
@@ -159,31 +148,7 @@ impl<'a> SchemaDiscovery<'a> {
         }
 
         Err(last_error.unwrap_or_else(|| {
-            DynamicError::SchemaNotFound("No standard schema source succeeded".to_string())
-        }))
-    }
-
-    async fn try_extended(
-        &self,
-        candidates: &[TopicSchemaCandidate],
-    ) -> Result<(Arc<MessageSchema>, String), DynamicError> {
-        let mut last_error = None;
-
-        for candidate in candidates {
-            match crate::extended_type_description_query::query_extended_type_description(
-                self.node,
-                candidate,
-                self.timeout,
-            )
-            .await
-            {
-                Ok(result) => return Ok(result),
-                Err(error) => last_error = Some(error),
-            }
-        }
-
-        Err(last_error.unwrap_or_else(|| {
-            DynamicError::SchemaNotFound("No extended schema source succeeded".to_string())
+            DynamicError::SchemaNotFound("No schema source succeeded".to_string())
         }))
     }
 }

@@ -179,32 +179,16 @@ pub trait MessageTypeInfo {
         false
     }
 
-    /// Returns the runtime schema for this message type, if available.
+    /// Returns the runtime schema for this message type.
     ///
     /// This enables static publishers created via [`crate::node::ZNode::create_pub`]
     /// to auto-register schemas with a node's TypeDescription service.
     ///
-    /// Default implementation returns `None` for backward compatibility.
-    /// Generated ROS2 message types can override this to return `Some(schema)`.
-    fn message_schema() -> Option<std::sync::Arc<crate::dynamic::MessageSchema>> {
-        None
-    }
+    fn message_schema() -> std::sync::Arc<crate::dynamic::MessageSchema>;
 
     /// Returns the runtime field shape used when this type is nested inside another schema.
     fn field_type() -> crate::dynamic::FieldType {
-        crate::dynamic::FieldType::Message(
-            Self::message_schema()
-                .expect("nested message fields require MessageTypeInfo::message_schema()"),
-        )
-    }
-
-    /// Register any non-standard schema discovery hooks for this type on the node.
-    ///
-    /// Core ros-z keeps the standard type-description path separate, so the
-    /// default implementation is a no-op. Extended schema derives override this
-    /// to register with ros-z's parallel extended type description service.
-    fn register_type_extensions(_node: &crate::node::ZNode) -> std::result::Result<(), String> {
-        Ok(())
+        crate::dynamic::FieldType::Message(Self::message_schema())
     }
 
     // === Dynamic Methods (Runtime) ===
@@ -242,7 +226,10 @@ pub trait MessageTypeInfo {
     }
 }
 
-impl<T: MessageTypeInfo> FieldTypeInfo for T {
+impl<T> FieldTypeInfo for T
+where
+    T: MessageTypeInfo,
+{
     fn field_type() -> crate::dynamic::FieldType {
         <T as MessageTypeInfo>::field_type()
     }

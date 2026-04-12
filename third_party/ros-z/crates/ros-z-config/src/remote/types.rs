@@ -1,18 +1,21 @@
 use serde::{Deserialize, Serialize};
 
 use ros_z::{
-    MessageTypeInfo, ServiceTypeInfo,
-    entity::{TypeHash, TypeInfo},
+    entity::TypeInfo,
     msg::{SerdeCdrSerdes, ZMessage, ZService},
+    ServiceTypeInfo,
 };
 
-use crate::{ConfigKey, LayerPath, snapshot::ConfigTimestamp};
+use crate::{snapshot::ConfigTimestamp, ConfigKey, LayerPath};
 
 /// JSON payload embedded as a UTF-8 string inside CDR-encoded wire messages.
 pub type JsonPayload = String;
 
 /// Origin of a committed config change.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default, ros_z::MessageTypeInfo,
+)]
+#[ros_msg(type_name = "ros_z_config/msg/NodeConfigChangeSource")]
 #[repr(u8)]
 pub enum NodeConfigChangeSource {
     #[default]
@@ -176,7 +179,8 @@ pub struct GetNodeConfigMetadataResponse {
 }
 
 /// One changed field in a published config event.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, ros_z::MessageTypeInfo)]
+#[ros_msg(type_name = "ros_z_config/msg/NodeConfigChange")]
 pub struct NodeConfigChange {
     pub path: String,
     pub effective_source_layer: LayerPath,
@@ -185,7 +189,8 @@ pub struct NodeConfigChange {
 }
 
 /// Published config event on `~config/events`.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, ros_z::MessageTypeInfo)]
+#[ros_msg(type_name = "ros_z_config/msg/NodeConfigEvent")]
 pub struct NodeConfigEvent {
     pub node_fqn: String,
     pub config_key: ConfigKey,
@@ -226,16 +231,6 @@ impl_zmessage!(
     NodeConfigChange,
     NodeConfigEvent,
 );
-
-impl MessageTypeInfo for NodeConfigEvent {
-    fn type_name() -> &'static str {
-        "ros_z_config/msg/NodeConfigEvent"
-    }
-
-    fn type_hash() -> TypeHash {
-        TypeHash::zero()
-    }
-}
 
 macro_rules! impl_service {
     ($srv:ident, $req:ty, $res:ty, $name:literal) => {

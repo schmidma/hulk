@@ -1,6 +1,6 @@
 use approx_derive::{AbsDiffEq, RelativeEq};
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
-use ros_z::{MessageTypeInfo, dynamic::MessageSchema};
+use ros_z::FieldTypeInfo;
 use serde::{Deserialize, Serialize};
 
 macro_rules! generate_coordinate_system {
@@ -26,15 +26,16 @@ macro_rules! generate_coordinate_system {
             $(#[$doc])*
             pub struct $i;
 
-            impl MessageTypeInfo for $i {
-                fn type_name() -> &'static str {
-                    "hulk_coordinate_system/msg/coordinate_system"
+            impl FieldTypeInfo for $i {
+                fn field_type() -> ros_z::dynamic::FieldType {
+                    // These markers only exist to differentiate generic type names such as
+                    // `ZBallPosition<Ground>`. Normal schema construction calls
+                    // `generic_arg_name()` for the frame parameter, not `field_type()`.
+                    panic!("coordinate system markers are type-level only")
                 }
-                fn type_hash() -> ros_z::TypeHash {
-                    ros_z::TypeHash::zero()
-                }
-                fn message_schema() -> Option<std::sync::Arc<MessageSchema>> {
-                    None
+
+                fn generic_arg_name() -> String {
+                    "hulk_coordinate_system/msg/coordinate_system".to_string()
                 }
             }
         )*
@@ -160,3 +161,24 @@ generate_coordinate_system!(
     /// Y axis points down
     Screen,
 );
+
+#[cfg(test)]
+mod tests {
+    use ros_z::FieldTypeInfo;
+
+    use super::Ground;
+
+    #[test]
+    #[should_panic(expected = "coordinate system markers are type-level only")]
+    fn coordinate_system_markers_do_not_expose_runtime_field_types() {
+        let _ = <Ground as FieldTypeInfo>::field_type();
+    }
+
+    #[test]
+    fn coordinate_system_markers_still_provide_generic_arg_names() {
+        assert_eq!(
+            <Ground as FieldTypeInfo>::generic_arg_name(),
+            "hulk_coordinate_system/msg/coordinate_system"
+        );
+    }
+}
