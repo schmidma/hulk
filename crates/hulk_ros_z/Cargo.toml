@@ -18,6 +18,7 @@ coordinate_systems = { workspace = true }
 futures-util.workspace = true
 geometry = { workspace = true }
 image = { workspace = true }
+kinematics = { workspace = true }
 linear_algebra = { workspace = true }
 log.workspace = true
 ndarray = { workspace = true }

@@ -5201,6 +5201,7 @@ dependencies = [
  "futures-util",
  "geometry",
  "image",
+ "kinematics",
  "linear_algebra",
  "log",
  "ndarray",
@@ -5885,6 +5886,7 @@ dependencies = [
  "linear_algebra",
  "nalgebra",
  "path_serde",
+ "ros-z",
  "serde",
  "splines",
 ]

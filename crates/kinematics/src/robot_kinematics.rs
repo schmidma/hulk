@@ -1,3 +1,4 @@
+use ros_z::{MessageTypeInfo, TypeHash, msg::ZMessage};
 use serde::{Deserialize, Serialize};
 
 use linear_algebra::Isometry3;
@@ -18,11 +19,31 @@ pub struct RobotHeadKinematics {
     pub head_to_robot: Isometry3<Head, Robot>,
 }
 
+impl MessageTypeInfo for RobotHeadKinematics {
+    fn type_name() -> &'static str {
+        "hulk_ros_z/msg/RobotHeadKinematics"
+    }
+
+    fn type_hash() -> TypeHash {
+        TypeHash::zero()
+    }
+}
+
 #[derive(
     Debug, Clone, Default, PathSerialize, PathDeserialize, PathIntrospect, Serialize, Deserialize,
 )]
 pub struct RobotTorsoKinematics {
     pub torso_to_robot: Isometry3<Torso, Robot>,
+}
+
+impl MessageTypeInfo for RobotTorsoKinematics {
+    fn type_name() -> &'static str {
+        "hulk_ros_z/msg/RobotTorsoKinematics"
+    }
+
+    fn type_hash() -> TypeHash {
+        TypeHash::zero()
+    }
 }
 
 #[derive(
@@ -35,6 +56,16 @@ pub struct RobotLeftArmKinematics {
     pub forearm_to_robot: Isometry3<LeftForearm, Robot>,
 }
 
+impl MessageTypeInfo for RobotLeftArmKinematics {
+    fn type_name() -> &'static str {
+        "hulk_ros_z/msg/RobotLeftArmKinematics"
+    }
+
+    fn type_hash() -> TypeHash {
+        TypeHash::zero()
+    }
+}
+
 #[derive(
     Debug, Clone, Default, PathSerialize, PathDeserialize, PathIntrospect, Serialize, Deserialize,
 )]
@@ -43,6 +74,16 @@ pub struct RobotRightArmKinematics {
     pub outer_shoulder_to_robot: Isometry3<RightOuterShoulder, Robot>,
     pub upper_arm_to_robot: Isometry3<RightUpperArm, Robot>,
     pub forearm_to_robot: Isometry3<RightForearm, Robot>,
+}
+
+impl MessageTypeInfo for RobotRightArmKinematics {
+    fn type_name() -> &'static str {
+        "hulk_ros_z/msg/RobotRightArmKinematics"
+    }
+
+    fn type_hash() -> TypeHash {
+        TypeHash::zero()
+    }
 }
 
 #[derive(
@@ -58,6 +99,16 @@ pub struct RobotLeftLegKinematics {
     pub sole_to_robot: Isometry3<LeftSole, Robot>,
 }
 
+impl MessageTypeInfo for RobotLeftLegKinematics {
+    fn type_name() -> &'static str {
+        "hulk_ros_z/msg/RobotLeftLegKinematics"
+    }
+
+    fn type_hash() -> TypeHash {
+        TypeHash::zero()
+    }
+}
+
 #[derive(
     Debug, Clone, Default, PathSerialize, PathDeserialize, PathIntrospect, Serialize, Deserialize,
 )]
@@ -71,9 +122,28 @@ pub struct RobotRightLegKinematics {
     pub sole_to_robot: Isometry3<RightSole, Robot>,
 }
 
+impl MessageTypeInfo for RobotRightLegKinematics {
+    fn type_name() -> &'static str {
+        "hulk_ros_z/msg/RobotRightLegKinematics"
+    }
+
+    fn type_hash() -> TypeHash {
+        TypeHash::zero()
+    }
+}
+
 #[derive(
-    Debug, Clone, Default, PathSerialize, PathDeserialize, PathIntrospect, Serialize, Deserialize,
+    Debug,
+    Clone,
+    Default,
+    PathSerialize,
+    PathDeserialize,
+    PathIntrospect,
+    Serialize,
+    Deserialize,
+    MessageTypeInfo,
 )]
+#[ros_msg(type_name = "hulk_ros_z/msg/RobotKinematics")]
 pub struct RobotKinematics {
     pub head: RobotHeadKinematics,
     pub torso: RobotTorsoKinematics,
@@ -81,4 +151,8 @@ pub struct RobotKinematics {
     pub right_arm: RobotRightArmKinematics,
     pub left_leg: RobotLeftLegKinematics,
     pub right_leg: RobotRightLegKinematics,
+}
+
+impl ZMessage for RobotKinematics {
+    type Serdes = ros_z::msg::SerdeCdrSerdes<Self>;
 }
