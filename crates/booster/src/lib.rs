@@ -1,10 +1,10 @@
-use color_eyre::eyre::{Result, bail};
+use color_eyre::eyre::{bail, Result};
 use coordinate_systems::{Ground, Robot};
 use kinematics::joints::Joints;
-use linear_algebra::{Isometry2, Vector3, vector};
+use linear_algebra::{vector, Isometry2, Vector3};
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
-use ros_z::ExtendedMessageTypeInfo;
 use ros2::{geometry_msgs::transform_stamped::TransformStamped, std_msgs::header::Header};
+use ros_z::MessageTypeInfo;
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "pyo3")]
@@ -21,7 +21,7 @@ use pyo3::prelude::*;
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/LowState")]
 pub struct LowState {
@@ -93,7 +93,7 @@ impl LowState {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/ImuState")]
 pub struct ImuState {
@@ -146,7 +146,7 @@ impl ImuState {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/MotorState")]
 pub struct MotorState {
@@ -255,7 +255,7 @@ impl JointsMotorState for Joints<MotorState> {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/CommandType")]
 pub enum CommandType {
@@ -373,7 +373,7 @@ impl MotorCommand {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/FallDownStateType")]
 pub enum FallDownStateType {
@@ -394,7 +394,7 @@ pub enum FallDownStateType {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/FallDownState")]
 pub struct FallDownState {
@@ -431,7 +431,7 @@ impl FallDownState {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/ButtonEventType")]
 pub enum ButtonEventType {
@@ -457,7 +457,7 @@ pub enum ButtonEventType {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/ButtonEventMsg")]
 pub struct ButtonEventMsg {
@@ -489,7 +489,7 @@ impl ButtonEventMsg {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/RemoteControllerState")]
 pub struct RemoteControllerState {
@@ -612,7 +612,7 @@ pub struct Kick {
     PathSerialize,
     PathDeserialize,
     PathIntrospect,
-    ExtendedMessageTypeInfo,
+    MessageTypeInfo,
 )]
 #[ros_msg(type_name = "booster/msg/Odometer")]
 pub struct Odometer {

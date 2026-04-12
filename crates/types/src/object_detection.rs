@@ -1,8 +1,10 @@
 use color_eyre::Result;
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
 use ros_z::{
+    dynamic::{
+        EnumPayloadSchema, EnumSchema, EnumVariantSchema, FieldSchema, FieldType, MessageSchema,
+    },
     MessageTypeInfo, TypeHash,
-    dynamic::{FieldSchema, MessageSchema},
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc as SyncArc;
@@ -329,18 +331,29 @@ impl MessageTypeInfo for NaoLabelPartyObjectDetectionLabel {
         TypeHash::zero()
     }
 
-    fn message_schema() -> Option<std::sync::Arc<ros_z::dynamic::MessageSchema>> {
-        Some(SyncArc::new(MessageSchema {
+    fn message_schema() -> std::sync::Arc<ros_z::dynamic::MessageSchema> {
+        SyncArc::new(MessageSchema {
             type_name: Self::type_name().to_owned(),
             package: "hulk_ros_z".to_owned(),
             name: "NaoLabelPartyObjectDetectionLabel".to_owned(),
-            fields: vec![FieldSchema {
-                name: "Label".to_owned(),
-                field_type: ros_z::dynamic::FieldType::Uint8,
-                default_value: None,
-            }],
-            type_hash: Some(Self::type_hash().to_rihs_string()),
-        }))
+            fields: vec![FieldSchema::new(
+                "value",
+                FieldType::Enum(SyncArc::new(EnumSchema::new(
+                    Self::type_name(),
+                    vec![
+                        EnumVariantSchema::new("Ball", EnumPayloadSchema::Unit),
+                        EnumVariantSchema::new("GoalPost", EnumPayloadSchema::Unit),
+                        EnumVariantSchema::new("LSpot", EnumPayloadSchema::Unit),
+                        EnumVariantSchema::new("PenaltySpot", EnumPayloadSchema::Unit),
+                        EnumVariantSchema::new("Robot", EnumPayloadSchema::Unit),
+                        EnumVariantSchema::new("TSpot", EnumPayloadSchema::Unit),
+                        EnumVariantSchema::new("XSpot", EnumPayloadSchema::Unit),
+                        EnumVariantSchema::new("Person", EnumPayloadSchema::Unit),
+                    ],
+                ))),
+            )],
+            type_hash: None,
+        })
     }
 }
 

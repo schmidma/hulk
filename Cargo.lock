@@ -8935,6 +8935,7 @@ dependencies = [
  "event-listener",
  "flume",
  "json5",
+ "nalgebra",
  "parking_lot",
  "paste",
  "ros-z-cdr",

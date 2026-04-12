@@ -1,4 +1,4 @@
-use ros_z::{MessageTypeInfo, TypeHash, msg::ZMessage};
+use ros_z::{msg::ZMessage, MessageTypeInfo};
 use serde::{Deserialize, Serialize};
 
 use linear_algebra::Isometry3;

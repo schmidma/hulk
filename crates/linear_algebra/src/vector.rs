@@ -1,11 +1,6 @@
+use crate::{Framed, Point};
 use nalgebra::{ClosedAddAssign, ClosedMulAssign, ComplexField, SVector, Scalar, SimdComplexField};
 use num_traits::{One, Signed, Zero};
-use ros_z::{
-    FieldTypeInfo,
-    dynamic::{FieldType, MessageSchema},
-};
-
-use crate::{Framed, Point};
 
 pub type Vector<Frame, const DIMENSION: usize, Scalar = f32> =
     Framed<Frame, nalgebra::SVector<Scalar, DIMENSION>>;

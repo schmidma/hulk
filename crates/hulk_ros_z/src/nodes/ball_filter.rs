@@ -3,7 +3,7 @@ use std::sync::Arc;
 use color_eyre::Result;
 use linear_algebra::vector;
 use projection::{Projection, camera_matrix::CameraMatrix};
-use ros_z::{Builder, MessageTypeInfo, TypeHash, context::ZContext};
+use ros_z::{Builder, TypeHash, context::ZContext, entity::TypeInfo};
 use ros_z_config::prelude::*;
 use serde::{Deserialize, Serialize};
 use types::object_detection::{Detections, NaoLabelPartyObjectDetectionLabel};
@@ -18,15 +18,6 @@ use coordinate_systems::Ground;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CameraMatrixOption {
     camera_matrix: Option<CameraMatrix>,
-}
-impl MessageTypeInfo for CameraMatrixOption {
-    fn type_name() -> &'static str {
-        "ros_z_config::msg::dds_::NodeConfigEvent_"
-    }
-
-    fn type_hash() -> TypeHash {
-        TypeHash::zero()
-    }
 }
 impl ros_z::msg::ZMessage for CameraMatrixOption {
     type Serdes = ros_z::msg::SerdeCdrSerdes<Self>;
@@ -43,7 +34,6 @@ pub async fn run(ctx: Arc<ZContext>) -> Result<()> {
     let node = ctx
         .create_node("ball_filter")
         .with_type_description_service()
-        .with_extended_type_description_service()
         .build()
         .into_eyre()?;
     let config = node
@@ -51,7 +41,13 @@ pub async fn run(ctx: Arc<ZContext>) -> Result<()> {
         .into_eyre()?;
 
     let camera_matrix_sub = node
-        .create_sub::<CameraMatrixOption>("camera_matrix/camera_matrix")
+        .create_sub_with_type_info::<CameraMatrixOption>(
+            "camera_matrix/camera_matrix",
+            Some(TypeInfo::new(
+                "ros_z_config::msg::dds_::NodeConfigEvent_",
+                Some(TypeHash::zero()),
+            )),
+        )
         .build()
         .into_eyre()?;
     let detected_objects_sub = node

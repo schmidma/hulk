@@ -7,7 +7,7 @@ use ros_z::{
     dynamic::{FieldSchema, FieldType, MessageSchema},
     entity::TypeInfo,
     ros_msg::MessageTypeInfo,
-    time::{Duration, ZClock, ZTime},
+    time::{ZClock, ZTime},
 };
 use ros_z_msgs::std_msgs::ByteMultiArray;
 use serde::{Deserialize, Serialize};

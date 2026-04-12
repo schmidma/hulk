@@ -6,9 +6,9 @@ use std::{
 use booster_sdk::types::RobotMode;
 use color_eyre::Result;
 use ros_z::{
-    Builder, ExtendedMessageTypeInfo, MessageTypeInfo,
+    Builder, MessageTypeInfo,
     context::ZContext,
-    dynamic::{EnumPayloadSchema, EnumSchema, EnumVariantSchema, FieldSchema, FieldType},
+    dynamic::{EnumPayloadSchema, EnumSchema, EnumVariantSchema, FieldSchema, FieldType, MessageSchema},
     msg::{SerdeCdrSerdes, ZMessage},
 };
 use ros_z_config::prelude::*;
@@ -182,21 +182,15 @@ impl MessageTypeInfo for RobotModeMsg {
     fn type_hash() -> ros_z::TypeHash {
         ros_z::TypeHash::zero()
     }
-}
 
-impl ZMessage for RobotModeMsg {
-    type Serdes = SerdeCdrSerdes<Self>;
-}
-
-impl ExtendedMessageTypeInfo for RobotModeMsg {
-    fn extended_message_schema() -> Arc<ros_z::dynamic::MessageSchema> {
-        Arc::new(ros_z::dynamic::MessageSchema {
-            type_name: "hulk_ros_z/msg/RobotMode".to_string(),
+    fn message_schema() -> Arc<MessageSchema> {
+        Arc::new(MessageSchema {
+            type_name: Self::type_name().to_string(),
             fields: vec![FieldSchema::new(
                 "mode".to_string(),
-                FieldType::Enum(Arc::new(EnumSchema {
-                    type_name: "RobotMode".to_string(),
-                    variants: vec![
+                FieldType::Enum(Arc::new(EnumSchema::new(
+                    Self::type_name(),
+                    vec![
                         EnumVariantSchema::new("Unknown".to_string(), EnumPayloadSchema::Unit),
                         EnumVariantSchema::new("Idle".to_string(), EnumPayloadSchema::Unit),
                         EnumVariantSchema::new("Walking".to_string(), EnumPayloadSchema::Unit),
@@ -207,30 +201,20 @@ impl ExtendedMessageTypeInfo for RobotModeMsg {
                             EnumPayloadSchema::Unit,
                         ),
                     ],
-                })),
+                ))),
             )],
             package: "hulk_ros_z".to_string(),
             name: "RobotMode".to_string(),
-            type_hash: Default::default(),
+            type_hash: None,
         })
-    }
-
-    fn extended_field_type() -> ros_z::dynamic::FieldType {
-        FieldType::Enum(Arc::new(EnumSchema {
-            type_name: "RobotMode".to_string(),
-            variants: vec![
-                EnumVariantSchema::new("Unknown".to_string(), EnumPayloadSchema::Unit),
-                EnumVariantSchema::new("Idle".to_string(), EnumPayloadSchema::Unit),
-                EnumVariantSchema::new("Walking".to_string(), EnumPayloadSchema::Unit),
-                EnumVariantSchema::new("Falling".to_string(), EnumPayloadSchema::Unit),
-                EnumVariantSchema::new("GettingUp".to_string(), EnumPayloadSchema::Unit),
-                EnumVariantSchema::new("SpecialAction".to_string(), EnumPayloadSchema::Unit),
-            ],
-        }))
     }
 }
 
-#[derive(Serialize, Deserialize, ExtendedMessageTypeInfo)]
+impl ZMessage for RobotModeMsg {
+    type Serdes = SerdeCdrSerdes<Self>;
+}
+
+#[derive(Serialize, Deserialize, MessageTypeInfo)]
 #[ros_msg(type_name = "hulk_ros_z/msg/HighLevelCommand")]
 pub enum HighLevelCommand {
     ChangeMode { mode: i32 },

@@ -13,7 +13,7 @@ use color_eyre::{
     eyre::{Context, eyre},
 };
 use ros_z::{
-    Builder, ExtendedMessageTypeInfo, MessageTypeInfo,
+    Builder, MessageTypeInfo,
     context::ZContext,
     msg::{SerdeCdrSerdes, ZMessage},
     node::ZNode,
