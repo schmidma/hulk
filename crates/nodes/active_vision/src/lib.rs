@@ -12,7 +12,9 @@ use types::{
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("active_vision").build().await?;
 
-    let _parameters = node.bind_parameter_as::<LookActionParameters>("active_vision")?;
+    let _parameters = node
+        .bind_parameter_as::<LookActionParameters>("active_vision")
+        .await?;
     let _field_dimensions_sub = node
         .subscriber::<FieldDimensions>("field_dimensions")?
         .qos(QosProfile {

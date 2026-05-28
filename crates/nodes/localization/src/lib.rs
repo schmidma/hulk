@@ -51,7 +51,7 @@ pub struct Parameters {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("localization").build().await?;
 
-    let _parameters = node.bind_parameter_as::<Parameters>("localization")?;
+    let _parameters = node.bind_parameter_as::<Parameters>("localization").await?;
     let _filtered_game_controller_state_sub = node
         .subscriber::<Option<FilteredGameControllerState>>("filtered_game_controller_state")?
         .build()

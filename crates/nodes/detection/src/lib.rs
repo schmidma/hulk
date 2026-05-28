@@ -52,7 +52,9 @@ struct ModelOutputs<'a> {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("detection").build().await?;
 
-    let node_parameters = node.bind_parameter_as::<DetectionParameters>("detection")?;
+    let node_parameters = node
+        .bind_parameter_as::<DetectionParameters>("detection")
+        .await?;
 
     let image_sub = node
         .subscriber::<Image>("inputs/left_image")?

@@ -156,7 +156,9 @@ impl BallFilter {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("ball_filter").build().await?;
 
-    let _parameters = node.bind_parameter_as::<BallFilterParameters>("ball_filter")?;
+    let _parameters = node
+        .bind_parameter_as::<BallFilterParameters>("ball_filter")
+        .await?;
     let _field_dimensions_sub = node
         .subscriber::<FieldDimensions>("field_dimensions")?
         .qos(QosProfile {

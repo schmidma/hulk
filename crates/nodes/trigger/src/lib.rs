@@ -14,7 +14,7 @@ pub struct Parameters {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("trigger").build().await?;
 
-    let _parameters = node.bind_parameter_as::<Parameters>("trigger")?;
+    let _parameters = node.bind_parameter_as::<Parameters>("trigger").await?;
 
     pending::<()>().await;
 

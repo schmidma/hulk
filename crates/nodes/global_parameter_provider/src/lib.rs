@@ -17,7 +17,7 @@ pub struct Parameters {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("global_parameter_provider").build().await?;
 
-    let node_parameters = node.bind_parameter_as::<Parameters>("global")?;
+    let node_parameters = node.bind_parameter_as::<Parameters>("global").await?;
 
     let player_number_pub = node
         .publisher::<PlayerNumber>("player_number")?

@@ -20,7 +20,9 @@ use types::{
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("obstacle_filter").build().await?;
 
-    let _parameters = node.bind_parameter_as::<ObstacleFilterParameters>("obstacle_filter")?;
+    let _parameters = node
+        .bind_parameter_as::<ObstacleFilterParameters>("obstacle_filter")
+        .await?;
     let _field_dimensions_sub = node
         .subscriber::<FieldDimensions>("field_dimensions")?
         .qos(QosProfile {

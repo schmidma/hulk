@@ -20,7 +20,9 @@ pub struct Parameters {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("rule_obstacle_composer").build().await?;
 
-    let _parameters = node.bind_parameter_as::<Parameters>("rule_obstacle_composer")?;
+    let _parameters = node
+        .bind_parameter_as::<Parameters>("rule_obstacle_composer")
+        .await?;
     let _field_dimensions_sub = node
         .subscriber::<FieldDimensions>("field_dimensions")?
         .qos(QosProfile {

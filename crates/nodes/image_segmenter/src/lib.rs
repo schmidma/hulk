@@ -22,7 +22,9 @@ use types::{
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("image_segmenter").build().await?;
 
-    let parameters = node.bind_parameter_as::<ImageSegmenterParameters>("image_segmenter")?;
+    let parameters = node
+        .bind_parameter_as::<ImageSegmenterParameters>("image_segmenter")
+        .await?;
     let image_sub = node
         .subscriber::<TimeWrapper<YCbCr422Image>>("inputs/ycbcr422_image")?
         .build()

@@ -16,7 +16,9 @@ pub struct Parameters {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("whistle_filter").build().await?;
 
-    let _parameters = node.bind_parameter_as::<Parameters>("whistle_filter")?;
+    let _parameters = node
+        .bind_parameter_as::<Parameters>("whistle_filter")
+        .await?;
     let _detected_whistle_sub = node
         .subscriber::<Whistle>("detected_whistle")?
         .build()

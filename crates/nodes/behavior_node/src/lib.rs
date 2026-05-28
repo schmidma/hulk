@@ -11,7 +11,9 @@ use types::{
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("behavior_node").build().await?;
 
-    let _parameters = node.bind_parameter_as::<BehaviorParameters>("behavior_node")?;
+    let _parameters = node
+        .bind_parameter_as::<BehaviorParameters>("behavior_node")
+        .await?;
     let _field_dimensions_sub = node
         .subscriber::<FieldDimensions>("field_dimensions")?
         .qos(QosProfile {

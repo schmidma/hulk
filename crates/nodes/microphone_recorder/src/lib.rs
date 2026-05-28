@@ -3,13 +3,15 @@ use std::sync::Arc;
 use color_eyre::Result;
 
 use microphones::{parameters::Parameters as MicrophonesParameters, reader::Microphones};
-use ros_z::{context::Context, parameter::NodeParametersExt};
+use ros_z::context::Context;
 use types::samples::Samples;
 
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("microphone_recorder").build().await?;
 
-    let parameters = node.bind_parameter_as::<MicrophonesParameters>("microphone_recorder")?;
+    let parameters = node
+        .bind_parameter_as::<MicrophonesParameters>("microphone_recorder")
+        .await?;
 
     let microphones_samples_pub = node
         .publisher::<Samples>("inputs/microphones_samples")?

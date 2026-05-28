@@ -12,7 +12,9 @@ use types::{
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("whistle_detection").build().await?;
 
-    let _parameters = node.bind_parameter_as::<WhistleDetectionParameters>("whistle_detection")?;
+    let _parameters = node
+        .bind_parameter_as::<WhistleDetectionParameters>("whistle_detection")
+        .await?;
     let _samples_sub = node.subscriber::<Samples>("samples")?.build().await?;
     // TODO: restructure type layout here, do not use blank tuples
     // let _audio_spectrums_pub = node

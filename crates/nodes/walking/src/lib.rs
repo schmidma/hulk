@@ -17,7 +17,7 @@ pub struct Parameters {
 pub async fn run(ctx: Arc<Context>) -> Result<()> {
     let node = ctx.create_node("walking").build().await?;
 
-    let _parameters = node.bind_parameter_as::<Parameters>("walking")?;
+    let _parameters = node.bind_parameter_as::<Parameters>("walking").await?;
 
     let _get_robot_mode_client = node
         .create_service_client::<GetRobotMode>("services/get_robot_mode")?
